@@ -1,0 +1,1095 @@
+import React, { useState, useRef, useEffect, useCallback, createContext, useContext } from 'react';
+import {
+  Menu, X, ArrowUpRight, Star, MapPin, Phone, Clock,
+  Camera, MessageCircle, Check, ChevronRight, ChevronLeft, Send,
+  Plus, Trash2, Lock, Settings as SettingsIcon, Image as ImageIcon,
+  ListChecks, MessageSquare, RotateCcw
+} from 'lucide-react';
+
+const NAV = [
+  { id: 'home', label: 'Главная' },
+  { id: 'services', label: 'Услуги' },
+  { id: 'portfolio', label: 'Портфолио' },
+  { id: 'reviews', label: 'Отзывы' },
+  { id: 'contacts', label: 'Контакты' },
+];
+
+const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const WEEKDAYS_RU = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const TIME_SLOTS = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
+const ADMIN_CODE = 'linea2026';
+
+const DEFAULT_DATA = {
+  settings: {
+    heroEyebrow: 'Студия косметологии · Харьков',
+    heroTitle: 'Уход за кожей, выстроенный как протокол',
+    heroSubtitle: 'Диагностика кожи, персональный план процедур и сопровождение врача-косметолога на каждом этапе — от первой чистки до курса инъекционной коррекции.',
+    phone: '+38 (050) 123-45-67',
+    address: 'г. Харьков, ул. Сумская, 15',
+    hours: 'Ежедневно, 10:00–20:00',
+  },
+  serviceGroups: [
+    {
+      title: 'Уход за лицом',
+      note: 'база любого протокола',
+      items: [
+        { name: 'Комбинированная чистка лица', price: 1200, time: '60 мин' },
+        { name: 'Химический пилинг', price: 900, time: '40 мин' },
+        { name: 'Уход для проблемной кожи', price: 1100, time: '50 мин' },
+        { name: 'Экспресс-уход перед событием', price: 800, time: '30 мин' },
+      ],
+    },
+    {
+      title: 'Аппаратная косметология',
+      note: 'работа с оборудованием',
+      items: [
+        { name: 'Мезотерапия', price: 1500, time: '45 мин' },
+        { name: 'Дарсонваль', price: 600, time: '30 мин' },
+        { name: 'RF-лифтинг', price: 1800, time: '50 мин' },
+        { name: 'Микротоковая терапия', price: 1300, time: '40 мин' },
+      ],
+    },
+    {
+      title: 'Инъекционная косметология',
+      note: 'проводит врач-косметолог',
+      items: [
+        { name: 'Биоревитализация', price: 2500, time: '40 мин' },
+        { name: 'Контурная пластика губ', price: 3200, time: '45 мин' },
+        { name: 'Ботулинотерапия', price: 3500, time: '30 мин', from: true },
+      ],
+    },
+  ],
+  cases: [
+    { title: 'Комбинированная чистка лица', tag: 'Уход за лицом', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#C9B8A6,#A4917E)', after: 'linear-gradient(135deg,#F5E6D6,#FFF8EE)' },
+    { title: 'RF-лифтинг, курс 5 процедур', tag: 'Аппаратная косметология', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#BCAC98,#8E8272)', after: 'linear-gradient(135deg,#F1E0CB,#FBEEDD)' },
+    { title: 'Биоревитализация', tag: 'Инъекционная косметология', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#C6B6A4,#9C8C79)', after: 'linear-gradient(135deg,#F5EADD,#FDF7EC)' },
+    { title: 'Контурная пластика губ', tag: 'Инъекционная косметология', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#D2B7AC,#AD897C)', after: 'linear-gradient(135deg,#F1D9CE,#FBEAE1)' },
+  ],
+  reviews: [
+    { name: 'Анна К.', service: 'Биоревитализация', rating: 5, text: 'Кожа стала заметно более плотной уже после второй процедуры. Косметолог подробно объяснила протокол и подобрала уход домой.' },
+    { name: 'Ирина С.', service: 'Комбинированная чистка', rating: 5, text: 'Записалась впервые, боялась боли и покраснений — всё прошло аккуратно, без стресса для кожи. Записалась на курс.' },
+    { name: 'Мария Д.', service: 'RF-лифтинг', rating: 5, text: 'Результат виден уже после трёх сеансов из курса. Овал лица подтянулся, кожа выглядит отдохнувшей.' },
+    { name: 'Ольга П.', service: 'Контурная пластика губ', rating: 4, text: 'Очень аккуратная, естественная коррекция — ровно то, о чём я просила. Отёк сошёл на второй день.' },
+  ],
+};
+
+const SiteDataContext = createContext(null);
+function useSiteData() { return useContext(SiteDataContext); }
+
+function GlobalStyle() {
+  return (
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+      .ls-root {
+        --bg: #F6F0EC;
+        --surface: #FFFFFF;
+        --surface-soft: #FBF6F1;
+        --ink: #26221F;
+        --ink-soft: #746B62;
+        --ink-faint: #A79E92;
+        --sage: #4E5F47;
+        --sage-dark: #384533;
+        --clay: #C97B6D;
+        --clay-dark: #A9584B;
+        --taupe: #B7A78C;
+        --line: #E3D9CB;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: 'Inter', sans-serif;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      .ls-root * { box-sizing: border-box; }
+      .f-display { font-family: 'Fraunces', serif; }
+      .f-mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em; }
+
+      .ls-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--sage);
+      }
+
+      .ls-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 14px;
+        padding: 13px 24px;
+        border-radius: 2px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      .ls-btn:active { transform: scale(0.97); }
+      .ls-btn-primary { background: var(--sage); color: #F6F0EC; }
+      .ls-btn-primary:hover { background: var(--sage-dark); box-shadow: 0 6px 18px rgba(56,69,51,0.28); }
+      .ls-btn-outline { background: transparent; color: var(--ink); border-color: var(--ink); }
+      .ls-btn-outline:hover { border-color: var(--sage); color: var(--sage); }
+      .ls-btn-ghost { background: transparent; color: var(--surface); border-color: rgba(255,255,255,0.35); }
+      .ls-btn-ghost:hover { border-color: #fff; }
+      .ls-btn-sm { padding: 8px 14px; font-size: 13px; }
+      .ls-btn-danger { background: transparent; color: var(--clay-dark); border-color: transparent; padding: 6px 10px; }
+      .ls-btn-danger:hover { background: rgba(201,123,109,0.12); }
+
+      .ls-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        transition: box-shadow 0.25s ease, transform 0.25s ease;
+      }
+      .ls-card-hover:hover { box-shadow: 0 14px 30px rgba(38,34,31,0.08); transform: translateY(-3px); }
+
+      .ls-scan {
+        position: relative;
+        height: 1px;
+        background: var(--line);
+        overflow: visible;
+        margin: 0 auto;
+      }
+      .ls-scan::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: 0;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--sage);
+        animation: ls-sweep 5.5s ease-in-out infinite;
+      }
+      @keyframes ls-sweep {
+        0% { left: 0%; opacity: 0; }
+        8% { opacity: 1; }
+        48% { opacity: 1; }
+        50% { left: calc(100% - 5px); opacity: 1; }
+        58% { opacity: 0; }
+        100% { left: calc(100% - 5px); opacity: 0; }
+      }
+
+      .ls-input {
+        width: 100%;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--ink);
+        border-radius: 2px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      .ls-input:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(78,95,71,0.12); }
+      .ls-input::placeholder { color: var(--ink-faint); }
+      .ls-label {
+        display: block;
+        font-size: 12px;
+        color: var(--ink-soft);
+        margin-bottom: 6px;
+      }
+
+      .ls-navlink {
+        font-size: 14px;
+        color: var(--ink-soft);
+        cursor: pointer;
+        position: relative;
+        padding-bottom: 3px;
+        border-bottom: 1px solid transparent;
+        transition: color 0.15s ease, border-color 0.15s ease;
+        background: none;
+        border-top: none; border-left: none; border-right: none;
+      }
+      .ls-navlink:hover { color: var(--ink); }
+      .ls-navlink.active { color: var(--ink); border-bottom-color: var(--sage); }
+
+      .ls-ba-handle {
+        position: absolute;
+        top: 0; bottom: 0;
+        width: 2px;
+        background: #fff;
+        cursor: ew-resize;
+        touch-action: none;
+      }
+      .ls-ba-handle::after {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 34px; height: 34px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.25);
+      }
+      .ls-ba-handle::before {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        border: 1.5px solid var(--sage-dark);
+        z-index: 1;
+      }
+
+      .ls-day {
+        aspect-ratio: 1;
+        border: 1px solid transparent;
+        background: none;
+        border-radius: 2px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      }
+      .ls-day:hover:not(:disabled) { border-color: var(--sage); }
+      .ls-day:disabled { color: var(--ink-faint); cursor: not-allowed; opacity: 0.4; }
+      .ls-day.selected { background: var(--sage); color: #F6F0EC; }
+
+      .ls-slot {
+        padding: 10px 6px;
+        text-align: center;
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        background: var(--surface);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      }
+      .ls-slot:hover { border-color: var(--sage); }
+      .ls-slot.selected { background: var(--sage); color: #F6F0EC; border-color: var(--sage); }
+
+      @media (max-width: 820px) {
+        .ls-hide-mobile { display: none !important; }
+        .ls-stack-mobile { grid-template-columns: 1fr !important; }
+      }
+      @media (min-width: 821px) {
+        .ls-hide-desktop { display: none !important; }
+      }
+    `}</style>
+  );
+}
+
+function Container({ children, style }) {
+  return (
+    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 24px', ...style }}>
+      {children}
+    </div>
+  );
+}
+
+function Reveal({ children, delay = 0, y = 22 }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) { setVisible(true); obs.unobserve(el); }
+      });
+    }, { threshold: 0.15 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <div ref={ref} style={{
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : `translateY(${y}px)`,
+      transition: `opacity 0.7s cubic-bezier(.22,.61,.36,1) ${delay}s, transform 0.7s cubic-bezier(.22,.61,.36,1) ${delay}s`,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function ScanDivider({ label }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '64px 0' }}>
+      <div className="ls-scan" style={{ flex: 1 }} />
+      {label && <span className="ls-eyebrow" style={{ whiteSpace: 'nowrap' }}>{label}</span>}
+      <div className="ls-scan" style={{ flex: 1 }} />
+    </div>
+  );
+}
+
+function Logo({ onClick, dark }) {
+  return (
+    <div onClick={onClick} style={{ cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6 }}>
+      <span className="f-display" style={{ fontSize: 22, fontWeight: 600, letterSpacing: '0.02em', color: dark ? '#fff' : 'var(--ink)' }}>Linea</span>
+      <span className="f-mono" style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.6)' : 'var(--sage)' }}>studio</span>
+    </div>
+  );
+}
+
+function Header({ page, setPage }) {
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  const go = (id) => { setPage(id); setOpen(false); };
+  return (
+    <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(246,240,236,0.92)', backdropFilter: 'blur(6px)', borderBottom: '1px solid var(--line)', boxShadow: scrolled ? '0 6px 20px rgba(38,34,31,0.06)' : 'none', transition: 'box-shadow 0.25s ease' }}>
+      <Container style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 76 }}>
+        <Logo onClick={() => go('home')} />
+        <nav className="ls-hide-mobile" style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+          {NAV.map(n => (
+            <button key={n.id} className={`ls-navlink ${page === n.id ? 'active' : ''}`} onClick={() => go(n.id)}>{n.label}</button>
+          ))}
+        </nav>
+        <button className="ls-btn ls-btn-primary ls-hide-mobile" onClick={() => go('contacts')}>Записаться</button>
+        <button className="ls-hide-desktop" onClick={() => setOpen(!open)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink)' }} aria-label="Меню">
+          {open ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </Container>
+      {open && (
+        <div className="ls-hide-desktop" style={{ borderTop: '1px solid var(--line)', background: 'var(--surface)' }}>
+          <Container style={{ display: 'flex', flexDirection: 'column', padding: '16px 24px 24px', gap: 4 }}>
+            {NAV.map(n => (
+              <button key={n.id} onClick={() => go(n.id)} style={{ textAlign: 'left', background: 'none', border: 'none', padding: '12px 0', fontSize: 16, color: page === n.id ? 'var(--sage)' : 'var(--ink)', borderBottom: '1px solid var(--line)', cursor: 'pointer' }}>{n.label}</button>
+            ))}
+          </Container>
+        </div>
+      )}
+    </header>
+  );
+}
+
+function Footer({ setPage }) {
+  const { data } = useSiteData();
+  return (
+    <footer style={{ background: 'var(--sage-dark)', color: 'rgba(246,240,236,0.85)', marginTop: 96 }}>
+      <Container style={{ padding: '56px 24px 32px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 32 }}>
+        <div>
+          <Logo dark onClick={() => setPage('home')} />
+          <p style={{ fontSize: 13, marginTop: 16, maxWidth: 260, color: 'rgba(246,240,236,0.65)' }}>Студия косметологии в Харькове. Индивидуальный подход и протоколы под контролем врача-косметолога.</p>
+        </div>
+        <div>
+          <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.5)', marginBottom: 14 }}>Разделы</p>
+          {NAV.map(n => (
+            <div key={n.id} style={{ marginBottom: 10 }}>
+              <button onClick={() => setPage(n.id)} style={{ background: 'none', border: 'none', color: 'inherit', fontSize: 14, cursor: 'pointer', padding: 0, opacity: 0.85 }}>{n.label}</button>
+            </div>
+          ))}
+        </div>
+        <div>
+          <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.5)', marginBottom: 14 }}>Контакты</p>
+          <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}><Phone size={14} /> {data.settings.phone}</p>
+          <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}><MapPin size={14} /> {data.settings.address}</p>
+          <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center' }}><Clock size={14} /> {data.settings.hours}</p>
+        </div>
+        <div>
+          <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.5)', marginBottom: 14 }}>Соцсети</p>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <span style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(246,240,236,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Camera size={16} /></span>
+            <span style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(246,240,236,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MessageCircle size={16} /></span>
+          </div>
+        </div>
+      </Container>
+      <div style={{ borderTop: '1px solid rgba(246,240,236,0.15)' }}>
+        <Container style={{ padding: '18px 24px', fontSize: 12, color: 'rgba(246,240,236,0.5)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+          <span>© {new Date().getFullYear()} Linea Studio. Все процедуры проводятся квалифицированными специалистами.</span>
+          <button onClick={() => setPage('admin')} style={{ background: 'none', border: 'none', color: 'rgba(246,240,236,0.5)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Панель администратора</button>
+        </Container>
+      </div>
+    </footer>
+  );
+}
+
+function Calendar({ value, onChange }) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const [view, setView] = useState(() => value ? new Date(value.getFullYear(), value.getMonth(), 1) : new Date(today.getFullYear(), today.getMonth(), 1));
+
+  const firstDay = new Date(view.getFullYear(), view.getMonth(), 1);
+  let startOffset = firstDay.getDay() - 1; if (startOffset < 0) startOffset = 6;
+  const daysInMonth = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+
+  const cells = [];
+  for (let i = 0; i < startOffset; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(view.getFullYear(), view.getMonth(), d));
+
+  const isSameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <button type="button" onClick={() => setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))} style={{ background: 'none', border: '1px solid var(--line)', borderRadius: 2, cursor: 'pointer', padding: 6, display: 'flex' }} aria-label="Предыдущий месяц"><ChevronLeft size={15} /></button>
+        <span className="f-mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{MONTHS_RU[view.getMonth()]} {view.getFullYear()}</span>
+        <button type="button" onClick={() => setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))} style={{ background: 'none', border: '1px solid var(--line)', borderRadius: 2, cursor: 'pointer', padding: 6, display: 'flex' }} aria-label="Следующий месяц"><ChevronRight size={15} /></button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 4, marginBottom: 6 }}>
+        {WEEKDAYS_RU.map(w => <span key={w} className="f-mono" style={{ fontSize: 10, textAlign: 'center', color: 'var(--ink-faint)' }}>{w}</span>)}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 4 }}>
+        {cells.map((d, i) => d ? (
+          <button
+            type="button"
+            key={i}
+            disabled={d < today}
+            className={`ls-day ${isSameDay(d, value) ? 'selected' : ''}`}
+            onClick={() => onChange(d)}
+          >{d.getDate()}</button>
+        ) : <span key={i} />)}
+      </div>
+    </div>
+  );
+}
+
+function TimeSlots({ value, onChange }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
+      {TIME_SLOTS.map(t => (
+        <button type="button" key={t} className={`ls-slot ${value === t ? 'selected' : ''}`} onClick={() => onChange(t)}>{t}</button>
+      ))}
+    </div>
+  );
+}
+
+function BookingForm({ dark }) {
+  const { data } = useSiteData();
+  const allServiceNames = data.serviceGroups.flatMap(g => g.items.map(i => i.name));
+  const [form, setForm] = useState({ firstName: '', lastName: '', service: '', date: null, time: '', phone: '' });
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  const update = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.service || !form.phone.trim() || !form.date || !form.time) {
+      setError('Заполните имя, фамилию, услугу, желаемые дату и время, а также телефон.');
+      return;
+    }
+    setError('');
+    setSent(true);
+  };
+
+  const labelColor = dark ? 'rgba(246,240,236,0.7)' : 'var(--ink-soft)';
+  const dateLabel = form.date ? form.date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : '';
+
+  if (sent) {
+    return (
+      <div className="ls-card" style={{ padding: 32, background: dark ? 'rgba(255,255,255,0.06)' : 'var(--surface)', borderColor: dark ? 'rgba(255,255,255,0.2)' : 'var(--line)' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--sage)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+          <Check size={20} color="#F6F0EC" />
+        </div>
+        <p className="f-display" style={{ fontSize: 20, marginBottom: 8, color: dark ? '#fff' : 'var(--ink)' }}>Заявка отправлена</p>
+        <p style={{ fontSize: 14, color: labelColor, marginBottom: 20 }}>
+          {form.firstName}, мы получили вашу заявку на «{form.service}». Косметолог свяжется с вами по номеру {form.phone}, чтобы согласовать визит — постараемся попасть в желаемое {dateLabel}, {form.time}.
+        </p>
+        <button className="ls-btn ls-btn-outline" style={dark ? { color: '#fff', borderColor: 'rgba(255,255,255,0.4)' } : {}} onClick={() => { setSent(false); setForm({ firstName: '', lastName: '', service: '', date: null, time: '', phone: '' }); }}>
+          Отправить ещё одну заявку
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="ls-card" style={{ padding: 32, background: dark ? 'rgba(255,255,255,0.06)' : 'var(--surface)', borderColor: dark ? 'rgba(255,255,255,0.2)' : 'var(--line)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div>
+          <label className="ls-label" style={{ color: labelColor }}>Имя</label>
+          <input className="ls-input" placeholder="Анна" value={form.firstName} onChange={update('firstName')} />
+        </div>
+        <div>
+          <label className="ls-label" style={{ color: labelColor }}>Фамилия</label>
+          <input className="ls-input" placeholder="Ковальчук" value={form.lastName} onChange={update('lastName')} />
+        </div>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <label className="ls-label" style={{ color: labelColor }}>Услуга</label>
+        <select className="ls-input" value={form.service} onChange={update('service')}>
+          <option value="">Выберите услугу</option>
+          {allServiceNames.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <label className="ls-label" style={{ color: labelColor }}>Желаемая дата</label>
+        <div style={{ background: dark ? 'rgba(255,255,255,0.04)' : 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: 2, padding: 14 }}>
+          <Calendar value={form.date} onChange={(d) => setForm(f => ({ ...f, date: d }))} />
+        </div>
+      </div>
+      <div style={{ marginBottom: 20 }}>
+        <label className="ls-label" style={{ color: labelColor }}>Желаемое время</label>
+        <TimeSlots value={form.time} onChange={(t) => setForm(f => ({ ...f, time: t }))} />
+      </div>
+      <div style={{ marginBottom: 20 }}>
+        <label className="ls-label" style={{ color: labelColor }}>Телефон</label>
+        <input className="ls-input" placeholder="+38 (0__) ___-__-__" value={form.phone} onChange={update('phone')} />
+      </div>
+      {error && <p style={{ fontSize: 13, color: 'var(--clay-dark)', marginBottom: 16 }}>{error}</p>}
+      <button type="submit" className="ls-btn ls-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+        Отправить заявку <Send size={15} />
+      </button>
+      <p style={{ fontSize: 12, color: labelColor, marginTop: 12 }}>
+        Это заявка на связь, а не подтверждённая запись — точную дату и время согласует косметолог.
+      </p>
+    </form>
+  );
+}
+
+function BeforeAfter({ item }) {
+  const ref = useRef(null);
+  const [pct, setPct] = useState(50);
+  const dragging = useRef(false);
+
+  const setFromClientX = useCallback((clientX) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const p = ((clientX - rect.left) / rect.width) * 100;
+    setPct(Math.min(96, Math.max(4, p)));
+  }, []);
+
+  useEffect(() => {
+    const move = (e) => { if (!dragging.current) return; setFromClientX(e.touches ? e.touches[0].clientX : e.clientX); };
+    const up = () => { dragging.current = false; };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+    window.addEventListener('touchmove', move);
+    window.addEventListener('touchend', up);
+    return () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+      window.removeEventListener('touchmove', move);
+      window.removeEventListener('touchend', up);
+    };
+  }, [setFromClientX]);
+
+  const afterStyle = item.afterImg ? { backgroundImage: `url(${item.afterImg})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: item.after };
+  const beforeStyle = item.beforeImg ? { backgroundImage: `url(${item.beforeImg})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: item.before };
+
+  return (
+    <div>
+      <div ref={ref} style={{ position: 'relative', height: 280, borderRadius: 2, overflow: 'hidden', cursor: 'ew-resize', userSelect: 'none' }}
+        onMouseDown={(e) => { dragging.current = true; setFromClientX(e.clientX); }}
+        onTouchStart={(e) => { dragging.current = true; setFromClientX(e.touches[0].clientX); }}>
+        <div style={{ position: 'absolute', inset: 0, ...afterStyle }} />
+        <div style={{ position: 'absolute', top: 14, right: 14, fontSize: 10 }} className="f-mono">
+          <span style={{ background: 'rgba(255,255,255,0.85)', padding: '3px 8px', borderRadius: 2, color: 'var(--sage-dark)' }}>ПОСЛЕ</span>
+        </div>
+        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: `${pct}%`, overflow: 'hidden', ...beforeStyle }}>
+          <div style={{ position: 'absolute', top: 14, left: 14, fontSize: 10 }} className="f-mono">
+            <span style={{ background: 'rgba(255,255,255,0.85)', padding: '3px 8px', borderRadius: 2, color: 'var(--ink-soft)' }}>ДО</span>
+          </div>
+        </div>
+        <div className="ls-ba-handle" style={{ left: `${pct}%` }} />
+      </div>
+      <div style={{ marginTop: 14 }}>
+        <p className="ls-eyebrow" style={{ marginBottom: 4 }}>{item.tag}</p>
+        <p style={{ fontSize: 15, fontWeight: 500 }}>{item.title}</p>
+      </div>
+    </div>
+  );
+}
+
+function Hero({ setPage }) {
+  const { data } = useSiteData();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 60); return () => clearTimeout(t); }, []);
+  const s = data.settings;
+  return (
+    <div style={{ background: 'var(--sage-dark)', color: '#F6F0EC', position: 'relative', overflow: 'hidden' }}>
+      <Container style={{ padding: '96px 24px 88px', display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: 56, alignItems: 'center' }} >
+        <div style={{ opacity: mounted ? 1 : 0, transform: mounted ? 'translateY(0)' : 'translateY(18px)', transition: 'opacity 0.8s ease, transform 0.8s ease' }}>
+          <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.6)', marginBottom: 18 }}>{s.heroEyebrow}</p>
+          <h1 className="f-display" style={{ fontSize: 'clamp(34px,5vw,56px)', lineHeight: 1.08, fontWeight: 500, marginBottom: 22 }}>{s.heroTitle}</h1>
+          <p style={{ fontSize: 16, color: 'rgba(246,240,236,0.75)', maxWidth: 460, marginBottom: 34 }}>{s.heroSubtitle}</p>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            <button className="ls-btn ls-btn-primary" style={{ background: '#F6F0EC', color: 'var(--sage-dark)' }} onClick={() => setPage('contacts')}>Оставить заявку <ArrowUpRight size={15} /></button>
+            <button className="ls-btn ls-btn-ghost" onClick={() => setPage('services')}>Смотреть услуги</button>
+          </div>
+        </div>
+        <div className="ls-hide-mobile" style={{ position: 'relative', opacity: mounted ? 1 : 0, transform: mounted ? 'scale(1)' : 'scale(0.96)', transition: 'opacity 0.9s ease 0.15s, transform 0.9s ease 0.15s' }}>
+          <div style={{ position: 'relative', height: 340, borderRadius: 2, background: 'linear-gradient(155deg,#5C6E54,#3A4636 70%)', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(246,240,236,0.08) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
+            <div className="ls-scan" style={{ position: 'absolute', left: 24, right: 24, top: '50%', background: 'rgba(246,240,236,0.25)' }} />
+          </div>
+          <div style={{ position: 'absolute', bottom: -22, left: -22, background: '#F6F0EC', color: 'var(--ink)', padding: '16px 20px', borderRadius: 2, maxWidth: 220 }}>
+            <p className="f-mono" style={{ fontSize: 11, color: 'var(--sage)', marginBottom: 4 }}>ДИАГНОСТИКА</p>
+            <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Каждый протокол начинается с разбора состояния кожи</p>
+          </div>
+        </div>
+      </Container>
+    </div>
+  );
+}
+
+function StatRow() {
+  const stats = [
+    { n: '8 лет', l: 'практики студии' },
+    { n: '3 200+', l: 'проведённых процедур' },
+    { n: '12', l: 'протоколов ухода' },
+    { n: '4.9', l: 'средняя оценка клиентов' },
+  ];
+  return (
+    <Container>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 24, padding: '56px 0' }}>
+        {stats.map((s, i) => (
+          <Reveal key={s.l} delay={i * 0.08}>
+            <p className="f-display" style={{ fontSize: 30, marginBottom: 4 }}>{s.n}</p>
+            <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>{s.l}</p>
+          </Reveal>
+        ))}
+      </div>
+    </Container>
+  );
+}
+
+function ServicesTeaser({ setPage }) {
+  const { data } = useSiteData();
+  return (
+    <Container>
+      <Reveal>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Что мы делаем</p>
+            <h2 className="f-display" style={{ fontSize: 32 }}>Три направления ухода</h2>
+          </div>
+          <button className="ls-btn ls-btn-outline" onClick={() => setPage('services')}>Все услуги и цены <ChevronRight size={15} /></button>
+        </div>
+      </Reveal>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 20 }}>
+        {data.serviceGroups.map((g, i) => (
+          <Reveal key={g.title} delay={i * 0.1}>
+            <div className="ls-card ls-card-hover" style={{ padding: 28, height: '100%' }}>
+              <p className="f-mono" style={{ fontSize: 11, color: 'var(--sage)', marginBottom: 10 }}>{g.note}</p>
+              <p className="f-display" style={{ fontSize: 20, marginBottom: 16 }}>{g.title}</p>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {g.items.slice(0, 3).map(i2 => (
+                  <li key={i2.name} style={{ fontSize: 13, color: 'var(--ink-soft)', padding: '6px 0', borderTop: '1px solid var(--line)' }}>{i2.name}</li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </Container>
+  );
+}
+
+function ReviewsTeaser({ setPage }) {
+  const { data } = useSiteData();
+  return (
+    <div style={{ background: 'var(--surface-soft)' }}>
+      <Container style={{ padding: '72px 24px' }}>
+        <Reveal>
+          <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Отзывы</p>
+          <h2 className="f-display" style={{ fontSize: 32, marginBottom: 32 }}>Что говорят клиенты</h2>
+        </Reveal>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 20 }}>
+          {data.reviews.slice(0, 3).map((r, i) => (
+            <Reveal key={r.name} delay={i * 0.1}>
+              <div className="ls-card ls-card-hover" style={{ padding: 24, height: '100%' }}>
+                <div style={{ display: 'flex', gap: 3, marginBottom: 12 }}>
+                  {Array.from({ length: 5 }).map((_, si) => (
+                    <Star key={si} size={13} fill={si < r.rating ? '#C97B6D' : 'none'} color={si < r.rating ? '#C97B6D' : 'var(--line)'} />
+                  ))}
+                </div>
+                <p style={{ fontSize: 14, color: 'var(--ink-soft)', marginBottom: 16 }}>{r.text}</p>
+                <p style={{ fontSize: 13, fontWeight: 500 }}>{r.name} <span style={{ color: 'var(--ink-faint)', fontWeight: 400 }}>· {r.service}</span></p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <div style={{ marginTop: 28 }}>
+          <button className="ls-btn ls-btn-outline" onClick={() => setPage('reviews')}>Все отзывы <ChevronRight size={15} /></button>
+        </div>
+      </Container>
+    </div>
+  );
+}
+
+function HomePage({ setPage }) {
+  return (
+    <div>
+      <Hero setPage={setPage} />
+      <StatRow />
+      <ScanDivider label="НАПРАВЛЕНИЯ" />
+      <ServicesTeaser setPage={setPage} />
+      <div style={{ marginTop: 88 }}><ReviewsTeaser setPage={setPage} /></div>
+      <Container style={{ padding: '80px 24px 96px' }}>
+        <div className="ls-stack-mobile" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'start' }}>
+          <Reveal>
+            <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Записаться</p>
+            <h2 className="f-display" style={{ fontSize: 32, marginBottom: 16 }}>Оставьте заявку — мы перезвоним</h2>
+            <p style={{ fontSize: 14, color: 'var(--ink-soft)', maxWidth: 400 }}>Укажите желаемую услугу, дату и время — косметолог свяжется с вами лично, чтобы согласовать точный визит.</p>
+          </Reveal>
+          <Reveal delay={0.1}><BookingForm /></Reveal>
+        </div>
+      </Container>
+    </div>
+  );
+}
+
+function ServicesPage() {
+  const { data } = useSiteData();
+  return (
+    <Container style={{ padding: '64px 24px 96px' }}>
+      <Reveal>
+        <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Прайс-лист</p>
+        <h1 className="f-display" style={{ fontSize: 40, marginBottom: 16 }}>Услуги и цены</h1>
+        <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 48 }}>Итоговая стоимость и протокол уточняются после диагностики кожи на первичной консультации — цены ниже действительны для одной процедуры.</p>
+      </Reveal>
+      {data.serviceGroups.map((g) => (
+        <Reveal key={g.title}>
+          <div style={{ marginBottom: 48 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 18 }}>
+              <h2 className="f-display" style={{ fontSize: 24 }}>{g.title}</h2>
+              <span className="f-mono" style={{ fontSize: 11, color: 'var(--sage)' }}>{g.note}</span>
+            </div>
+            <div className="ls-card">
+              {g.items.map((it, ii) => (
+                <div key={it.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 24px', borderTop: ii === 0 ? 'none' : '1px solid var(--line)' }}>
+                  <div>
+                    <p style={{ fontSize: 15, marginBottom: 4 }}>{it.name}</p>
+                    <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)' }}>{it.time}</p>
+                  </div>
+                  <p className="f-mono" style={{ fontSize: 15, whiteSpace: 'nowrap' }}>{it.from ? 'от ' : ''}{Number(it.price).toLocaleString('ru-RU')} ₴</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+      ))}
+    </Container>
+  );
+}
+
+function PortfolioPage() {
+  const { data } = useSiteData();
+  return (
+    <Container style={{ padding: '64px 24px 96px' }}>
+      <Reveal>
+        <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Результаты</p>
+        <h1 className="f-display" style={{ fontSize: 40, marginBottom: 16 }}>Портфолио</h1>
+        <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 16 }}>Потяните за разделитель, чтобы сравнить состояние кожи до и после курса процедур.</p>
+        <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)', marginBottom: 40 }}>* пока используются иллюстративные заглушки — загрузите реальные фото через панель администратора</p>
+      </Reveal>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))', gap: 32 }}>
+        {data.cases.map((c, i) => (
+          <Reveal key={c.title} delay={i * 0.08}><BeforeAfter item={c} /></Reveal>
+        ))}
+      </div>
+    </Container>
+  );
+}
+
+function ReviewsPage() {
+  const { data } = useSiteData();
+  return (
+    <Container style={{ padding: '64px 24px 96px' }}>
+      <Reveal>
+        <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Мнения клиентов</p>
+        <h1 className="f-display" style={{ fontSize: 40, marginBottom: 40 }}>Отзывы</h1>
+      </Reveal>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 20 }}>
+        {data.reviews.map((r, i) => (
+          <Reveal key={r.name} delay={i * 0.06}>
+            <div className="ls-card ls-card-hover" style={{ padding: 26, height: '100%' }}>
+              <div style={{ display: 'flex', gap: 3, marginBottom: 14 }}>
+                {Array.from({ length: 5 }).map((_, si) => (
+                  <Star key={si} size={14} fill={si < r.rating ? '#C97B6D' : 'none'} color={si < r.rating ? '#C97B6D' : 'var(--line)'} />
+                ))}
+              </div>
+              <p style={{ fontSize: 14, color: 'var(--ink-soft)', marginBottom: 18 }}>{r.text}</p>
+              <p style={{ fontSize: 13, fontWeight: 500 }}>{r.name} <span style={{ color: 'var(--ink-faint)', fontWeight: 400 }}>· {r.service}</span></p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </Container>
+  );
+}
+
+function ContactsPage() {
+  const { data } = useSiteData();
+  const s = data.settings;
+  return (
+    <Container style={{ padding: '64px 24px 96px' }}>
+      <Reveal>
+        <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Связаться с нами</p>
+        <h1 className="f-display" style={{ fontSize: 40, marginBottom: 48 }}>Контакты и запись</h1>
+      </Reveal>
+      <div className="ls-stack-mobile" style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: 56 }}>
+        <Reveal>
+          <div style={{ marginBottom: 28 }}>
+            <p className="ls-eyebrow" style={{ marginBottom: 8 }}>Адрес</p>
+            <p style={{ fontSize: 15, display: 'flex', gap: 10, alignItems: 'flex-start' }}><MapPin size={16} style={{ marginTop: 3, flexShrink: 0 }} color="var(--sage)" /> {s.address}</p>
+          </div>
+          <div style={{ marginBottom: 28 }}>
+            <p className="ls-eyebrow" style={{ marginBottom: 8 }}>Телефон</p>
+            <p style={{ fontSize: 15, display: 'flex', gap: 10, alignItems: 'flex-start' }}><Phone size={16} style={{ marginTop: 3, flexShrink: 0 }} color="var(--sage)" /> {s.phone}</p>
+          </div>
+          <div style={{ marginBottom: 28 }}>
+            <p className="ls-eyebrow" style={{ marginBottom: 8 }}>Часы работы</p>
+            <p style={{ fontSize: 15, display: 'flex', gap: 10, alignItems: 'flex-start' }}><Clock size={16} style={{ marginTop: 3, flexShrink: 0 }} color="var(--sage)" /> {s.hours}</p>
+          </div>
+          <div style={{ height: 200, borderRadius: 2, background: 'var(--surface-soft)', border: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)' }}>карта проезда</p>
+          </div>
+        </Reveal>
+        <Reveal delay={0.1}><BookingForm /></Reveal>
+      </div>
+    </Container>
+  );
+}
+
+function AdminGate({ onUnlock }) {
+  const [code, setCode] = useState('');
+  const [error, setError] = useState('');
+  const submit = (e) => {
+    e.preventDefault();
+    if (code === ADMIN_CODE) { setError(''); onUnlock(); }
+    else setError('Неверный код доступа.');
+  };
+  return (
+    <Container style={{ padding: '96px 24px', maxWidth: 420 }}>
+      <div className="ls-card" style={{ padding: 32 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--surface-soft)', border: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+          <Lock size={17} color="var(--sage)" />
+        </div>
+        <p className="f-display" style={{ fontSize: 22, marginBottom: 8 }}>Панель администратора</p>
+        <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: 20 }}>Введите код доступа, чтобы редактировать содержимое сайта.</p>
+        <form onSubmit={submit}>
+          <input className="ls-input" type="password" placeholder="Код доступа" value={code} onChange={(e) => setCode(e.target.value)} style={{ marginBottom: 12 }} />
+          {error && <p style={{ fontSize: 13, color: 'var(--clay-dark)', marginBottom: 12 }}>{error}</p>}
+          <button className="ls-btn ls-btn-primary" style={{ width: '100%', justifyContent: 'center' }} type="submit">Войти</button>
+        </form>
+        <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 16 }}>демо-код: {ADMIN_CODE} — для продакшена подключите настоящую авторизацию</p>
+      </div>
+    </Container>
+  );
+}
+
+function AdminSection({ title, icon, children, actions }) {
+  return (
+    <div className="ls-card" style={{ padding: 24, marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {icon}
+          <p className="f-display" style={{ fontSize: 19 }}>{title}</p>
+        </div>
+        {actions}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function AdminField({ label, ...props }) {
+  return (
+    <div style={{ marginBottom: 10 }}>
+      {label && <label className="ls-label">{label}</label>}
+      <input className="ls-input" {...props} />
+    </div>
+  );
+}
+
+function structuredCloneSafe(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+function AdminPage() {
+  const { data, persist } = useSiteData();
+  const [unlocked, setUnlocked] = useState(false);
+  const [tab, setTab] = useState('services');
+  const [draft, setDraft] = useState(data);
+  const [savedMsg, setSavedMsg] = useState('');
+
+  useEffect(() => { setDraft(data); }, [data]);
+
+  if (!unlocked) return <AdminGate onUnlock={() => setUnlocked(true)} />;
+
+  const save = async () => {
+    await persist(draft);
+    setSavedMsg('Изменения сохранены и уже видны всем посетителям сайта.');
+    setTimeout(() => setSavedMsg(''), 3000);
+  };
+
+  const tabs = [
+    { id: 'services', label: 'Услуги', icon: <ListChecks size={16} /> },
+    { id: 'portfolio', label: 'Портфолио', icon: <ImageIcon size={16} /> },
+    { id: 'reviews', label: 'Отзывы', icon: <MessageSquare size={16} /> },
+    { id: 'settings', label: 'Настройки', icon: <SettingsIcon size={16} /> },
+  ];
+
+  return (
+    <Container style={{ padding: '48px 24px 96px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, flexWrap: 'wrap', gap: 16 }}>
+        <div>
+          <p className="ls-eyebrow" style={{ marginBottom: 8 }}>Управление сайтом</p>
+          <h1 className="f-display" style={{ fontSize: 34 }}>Панель администратора</h1>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="ls-btn ls-btn-outline ls-btn-sm" onClick={() => setDraft(structuredCloneSafe(DEFAULT_DATA))}><RotateCcw size={14} /> Сбросить</button>
+          <button className="ls-btn ls-btn-primary ls-btn-sm" onClick={save}>Сохранить</button>
+        </div>
+      </div>
+      {savedMsg && <p style={{ fontSize: 13, color: 'var(--sage)', marginBottom: 8 }}>{savedMsg}</p>}
+      <p style={{ fontSize: 12, color: 'var(--ink-faint)', marginBottom: 32 }}>Изменения хранятся в общем хранилище сайта: их увидят все, кто открывает эту страницу.</p>
+
+      <div style={{ display: 'flex', gap: 8, marginBottom: 28, flexWrap: 'wrap' }}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} className="ls-btn ls-btn-sm" style={{
+            background: tab === t.id ? 'var(--sage)' : 'transparent',
+            color: tab === t.id ? '#F6F0EC' : 'var(--ink)',
+            borderColor: tab === t.id ? 'var(--sage)' : 'var(--line)',
+          }}>{t.icon} {t.label}</button>
+        ))}
+      </div>
+
+      {tab === 'services' && (
+        <div>
+          {draft.serviceGroups.map((g, gi) => (
+            <AdminSection
+              key={gi}
+              title={g.title || 'Без названия'}
+              icon={<ListChecks size={16} color="var(--sage)" />}
+              actions={<button className="ls-btn-danger" onClick={() => setDraft(d => ({ ...d, serviceGroups: d.serviceGroups.filter((_, i) => i !== gi) }))}><Trash2 size={15} /></button>}
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                <AdminField label="Название группы" value={g.title} onChange={(e) => setDraft(d => { const sg = [...d.serviceGroups]; sg[gi] = { ...sg[gi], title: e.target.value }; return { ...d, serviceGroups: sg }; })} />
+                <AdminField label="Подпись" value={g.note} onChange={(e) => setDraft(d => { const sg = [...d.serviceGroups]; sg[gi] = { ...sg[gi], note: e.target.value }; return { ...d, serviceGroups: sg }; })} />
+              </div>
+              {g.items.map((it, ii) => (
+                <div key={ii} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                  <input className="ls-input" placeholder="Название услуги" value={it.name} onChange={(e) => setDraft(d => { const sg = [...d.serviceGroups]; const items = [...sg[gi].items]; items[ii] = { ...items[ii], name: e.target.value }; sg[gi] = { ...sg[gi], items }; return { ...d, serviceGroups: sg }; })} />
+                  <input className="ls-input" type="number" placeholder="Цена" value={it.price} onChange={(e) => setDraft(d => { const sg = [...d.serviceGroups]; const items = [...sg[gi].items]; items[ii] = { ...items[ii], price: e.target.value }; sg[gi] = { ...sg[gi], items }; return { ...d, serviceGroups: sg }; })} />
+                  <input className="ls-input" placeholder="60 мин" value={it.time} onChange={(e) => setDraft(d => { const sg = [...d.serviceGroups]; const items = [...sg[gi].items]; items[ii] = { ...items[ii], time: e.target.value }; sg[gi] = { ...sg[gi], items }; return { ...d, serviceGroups: sg }; })} />
+                  <button className="ls-btn-danger" onClick={() => setDraft(d => { const sg = [...d.serviceGroups]; sg[gi] = { ...sg[gi], items: sg[gi].items.filter((_, x) => x !== ii) }; return { ...d, serviceGroups: sg }; })}><Trash2 size={15} /></button>
+                </div>
+              ))}
+              <button className="ls-btn ls-btn-outline ls-btn-sm" style={{ marginTop: 8 }} onClick={() => setDraft(d => { const sg = [...d.serviceGroups]; sg[gi] = { ...sg[gi], items: [...sg[gi].items, { name: '', price: 0, time: '' }] }; return { ...d, serviceGroups: sg }; })}><Plus size={14} /> Добавить услугу</button>
+            </AdminSection>
+          ))}
+          <button className="ls-btn ls-btn-outline" onClick={() => setDraft(d => ({ ...d, serviceGroups: [...d.serviceGroups, { title: 'Новая группа', note: '', items: [] }] }))}><Plus size={15} /> Добавить группу услуг</button>
+        </div>
+      )}
+
+      {tab === 'portfolio' && (
+        <div>
+          {draft.cases.map((c, ci) => (
+            <AdminSection
+              key={ci}
+              title={c.title || 'Без названия'}
+              icon={<ImageIcon size={16} color="var(--sage)" />}
+              actions={<button className="ls-btn-danger" onClick={() => setDraft(d => ({ ...d, cases: d.cases.filter((_, i) => i !== ci) }))}><Trash2 size={15} /></button>}
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <AdminField label="Название кейса" value={c.title} onChange={(e) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], title: e.target.value }; return { ...d, cases: cs }; })} />
+                <AdminField label="Категория" value={c.tag} onChange={(e) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], tag: e.target.value }; return { ...d, cases: cs }; })} />
+                <AdminField label="Фото «до» (URL)" placeholder="https://..." value={c.beforeImg} onChange={(e) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], beforeImg: e.target.value }; return { ...d, cases: cs }; })} />
+                <AdminField label="Фото «после» (URL)" placeholder="https://..." value={c.afterImg} onChange={(e) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], afterImg: e.target.value }; return { ...d, cases: cs }; })} />
+              </div>
+              <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 6 }}>Если поле с фото пустое — используется заглушка-градиент.</p>
+            </AdminSection>
+          ))}
+          <button className="ls-btn ls-btn-outline" onClick={() => setDraft(d => ({ ...d, cases: [...d.cases, { title: 'Новый кейс', tag: '', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#C9B8A6,#A4917E)', after: 'linear-gradient(135deg,#F5E6D6,#FFF8EE)' }] }))}><Plus size={15} /> Добавить кейс</button>
+        </div>
+      )}
+
+      {tab === 'reviews' && (
+        <div>
+          {draft.reviews.map((r, ri) => (
+            <AdminSection
+              key={ri}
+              title={r.name || 'Без имени'}
+              icon={<MessageSquare size={16} color="var(--sage)" />}
+              actions={<button className="ls-btn-danger" onClick={() => setDraft(d => ({ ...d, reviews: d.reviews.filter((_, i) => i !== ri) }))}><Trash2 size={15} /></button>}
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 100px', gap: 12 }}>
+                <AdminField label="Имя" value={r.name} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], name: e.target.value }; return { ...d, reviews: rv }; })} />
+                <AdminField label="Услуга" value={r.service} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], service: e.target.value }; return { ...d, reviews: rv }; })} />
+                <div>
+                  <label className="ls-label">Оценка</label>
+                  <select className="ls-input" value={r.rating} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], rating: Number(e.target.value) }; return { ...d, reviews: rv }; })}>
+                    {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+              </div>
+              <label className="ls-label" style={{ marginTop: 8 }}>Текст отзыва</label>
+              <textarea className="ls-input" rows={3} value={r.text} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], text: e.target.value }; return { ...d, reviews: rv }; })} />
+            </AdminSection>
+          ))}
+          <button className="ls-btn ls-btn-outline" onClick={() => setDraft(d => ({ ...d, reviews: [...d.reviews, { name: '', service: '', rating: 5, text: '' }] }))}><Plus size={15} /> Добавить отзыв</button>
+        </div>
+      )}
+
+      {tab === 'settings' && (
+        <AdminSection title="Тексты и контакты" icon={<SettingsIcon size={16} color="var(--sage)" />}>
+          <AdminField label="Надпись над заголовком" value={draft.settings.heroEyebrow} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, heroEyebrow: e.target.value } }))} />
+          <AdminField label="Заголовок главного экрана" value={draft.settings.heroTitle} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, heroTitle: e.target.value } }))} />
+          <div style={{ marginBottom: 10 }}>
+            <label className="ls-label">Подзаголовок</label>
+            <textarea className="ls-input" rows={3} value={draft.settings.heroSubtitle} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, heroSubtitle: e.target.value } }))} />
+          </div>
+          <AdminField label="Телефон" value={draft.settings.phone} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, phone: e.target.value } }))} />
+          <AdminField label="Адрес" value={draft.settings.address} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, address: e.target.value } }))} />
+          <AdminField label="Часы работы" value={draft.settings.hours} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, hours: e.target.value } }))} />
+        </AdminSection>
+      )}
+    </Container>
+  );
+}
+
+export default function App() {
+  const [page, setPage] = useState('home');
+  const [data, setData] = useState(DEFAULT_DATA);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await window.storage.get('site-data', true);
+        if (res && res.value && !cancelled) {
+          const parsed = JSON.parse(res.value);
+          setData(d => ({ ...d, ...parsed, settings: { ...d.settings, ...parsed.settings } }));
+        }
+      } catch (e) {
+        /* no saved data yet - defaults are used */
+      }
+      if (!cancelled) setReady(true);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const persist = async (newData) => {
+    setData(newData);
+    try { await window.storage.set('site-data', JSON.stringify(newData), true); }
+    catch (e) { console.error('storage error', e); }
+  };
+
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [page]);
+
+  const pages = {
+    home: <HomePage setPage={setPage} />,
+    services: <ServicesPage />,
+    portfolio: <PortfolioPage />,
+    reviews: <ReviewsPage />,
+    contacts: <ContactsPage />,
+    admin: <AdminPage />,
+  };
+
+  if (!ready) {
+    return <div className="ls-root" style={{ minHeight: 400 }}><GlobalStyle /></div>;
+  }
+
+  return (
+    <SiteDataContext.Provider value={{ data, persist }}>
+      <div className="ls-root">
+        <GlobalStyle />
+        <Header page={page} setPage={setPage} />
+        {pages[page]}
+        <Footer setPage={setPage} />
+      </div>
+    </SiteDataContext.Provider>
+  );
+}
