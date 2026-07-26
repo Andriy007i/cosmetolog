@@ -26,7 +26,7 @@ const ADMIN_CODE = 'linea2026';
    Як отримати: supabase.com → New project → Settings → API.
    Без них сайт працює в демо-режимі (зберігає лише локально).
 --------------------------------------------------------- */
-const SUPABASE_URL = 'https://nkdgittctxmvbpwpskzv.supabase.co/rest/v1/';       // напр. 'https://xxxxxxxx.supabase.co'
+const SUPABASE_URL = 'https://nkdgittctxmvbpwpskzv.supabase.co';       // напр. 'https://xxxxxxxx.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rZGdpdHRjdHhtdmJwd3Bza3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwNTIwMTEsImV4cCI6MjEwMDYyODAxMX0.Lpg6Kaf11_b0-4c0CmapEtTc_B1jARB014A_YjOAo_U';  // публічний anon key з налаштувань проєкту
 
 // Ендпоінт форми на formspree.io — сюди прилітають заявки на пошту.
