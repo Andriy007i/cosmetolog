@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8" />
+    <title>Linea Studio</title>
+    <script type="text/javascript">
+      // Стандартный трюк для SPA на GitHub Pages (spa-github-pages by rafgraph).
+      // GitHub Pages не умеет отдавать index.html на произвольные пути,
+      // поэтому 404.html перекладывает путь в query-строку и уходит на "/",
+      // а скрипт в index.html (см. index-head-snippet.html) восстанавливает
+      // путь через history.replaceState ДО того, как React смонтируется.
+      //
+      // pathSegmentsToKeep:
+      //   0 — если сайт лежит на username.github.io ИЛИ у вас подключён свой домен
+      //   1 — если сайт лежит на username.github.io/НАЗВАНИЕ-РЕПОЗИТОРИЯ
+        var pathSegmentsToKeep = 1;
+
+        var l = window.location;
+        l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+        );
+    </script>
+    </head>
+    <body></body>
+</html>
