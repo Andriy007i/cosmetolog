@@ -19,13 +19,7 @@ const WEEKDAYS_UA = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
 const TIME_SLOTS = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
 const ADMIN_CODE = 'linea2026';
 
-/* ---------------------------------------------------------
-   ПІДКЛЮЧЕННЯ РЕАЛЬНОГО СХОВИЩА (для роботи поза Claude.ai)
-   Заповніть ці два поля даними вашого проєкту Supabase, щоб
-   зміни в адмінці бачили всі відвідувачі сайту, а не лише ви.
-   Як отримати: supabase.com → New project → Settings → API.
-   Без них сайт працює в демо-режимі (зберігає лише локально).
---------------------------------------------------------- */
+
 const SUPABASE_URL = 'https://nkdgittctxmvbpwpskzv.supabase.co';       // напр. 'https://xxxxxxxx.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rZGdpdHRjdHhtdmJwd3Bza3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwNTIwMTEsImV4cCI6MjEwMDYyODAxMX0.Lpg6Kaf11_b0-4c0CmapEtTc_B1jARB014A_YjOAo_U';  // публічний anon key з налаштувань проєкту
 
@@ -1400,7 +1394,7 @@ function AdminPage() {
   );
 }
 
-const PAGE_IDS = ['home', 'services', 'portfolio', 'reviews', 'contacts', 'admin'];
+/*const PAGE_IDS = ['home', 'services', 'portfolio', 'reviews', 'contacts', 'admin'];
 
 function pathForPage(id) { return id === 'home' ? '/' : `/${id}`; }
 function pageForPath(pathname) {
@@ -1408,7 +1402,23 @@ function pageForPath(pathname) {
   const id = clean === '/' ? 'home' : clean.slice(1);
   return PAGE_IDS.includes(id) ? id : 'home';
 }
+*/
+const PAGE_IDS = ['home', 'services', 'portfolio', 'reviews', 'contacts', 'admin'];
 
+// BASE_URL приходит от Vite (значение из base: '/cosmetolog/' в vite.config.js)
+const BASE_PATH = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+
+function pathForPage(id) {
+  const suffix = id === 'home' ? '' : `/${id}`;
+  return `${BASE_PATH}${suffix}` || '/';
+}
+function pageForPath(pathname) {
+  let clean = pathname || '/';
+  if (BASE_PATH && clean.startsWith(BASE_PATH)) clean = clean.slice(BASE_PATH.length);
+  clean = clean.replace(/\/+$/, '') || '/';
+  const id = clean === '/' ? 'home' : clean.replace(/^\//, '');
+  return PAGE_IDS.includes(id) ? id : 'home';
+}
 export default function App() {
   const [page, setPageState] = useState(() => (typeof window !== 'undefined' ? pageForPath(window.location.pathname) : 'home'));
   const [data, setData] = useState(DEFAULT_DATA);
