@@ -25,7 +25,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Ендпоінт форми на formspree.io — сюди прилітають заявки на пошту.
 // Створіть форму на https://formspree.io (безкоштовно) і вставте її URL.
-const FORMSPREE_ENDPOINT = ''; // напр. 'https://formspree.io/f/abcdwxyz'
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvzedgbk'; // напр. 'https://formspree.io/f/abcdwxyz'
 
 async function remoteGetSiteData() {
   if (SUPABASE_URL && SUPABASE_ANON_KEY) {
