@@ -23,8 +23,6 @@ const ADMIN_CODE = 'linea2026';
 const SUPABASE_URL = 'https://nkdgittctxmvbpwpskzv.supabase.co';       // напр. 'https://xxxxxxxx.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rZGdpdHRjdHhtdmJwd3Bza3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwNTIwMTEsImV4cCI6MjEwMDYyODAxMX0.Lpg6Kaf11_b0-4c0CmapEtTc_B1jARB014A_YjOAo_U';  // публічний anon key з налаштувань проєкту
 
-// Ендпоінт форми на formspree.io — сюди прилітають заявки на пошту.
-// Створіть форму на https://formspree.io (безкоштовно) і вставте її URL.
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvzedgbk'; // напр. 'https://formspree.io/f/abcdwxyz'
 
 async function remoteGetSiteData() {
@@ -76,10 +74,10 @@ const DEFAULT_DATA = {
     phone: '+38 (050) 123-45-67',
     address: 'м. Харків, вул. Сумська, 15',
     hours: 'Щодня, 10:00–20:00',
-    instagramUrl: 'https://instagram.com/linea.studio',
-    telegramUrl: 'https://t.me/linea_studio',
-    whatsappUrl: 'https://wa.me/380501234567',
-    viberUrl: 'viber://chat?number=%2B380501234567',
+    instagramUrl: 'https://instagram.com/',
+    telegramUrl: 'https://t.me/Aandrey_07',
+    whatsappUrl: 'https://wa.me/380995485775',
+    viberUrl: 'viber://chat?number=%2B380995485775',
   },
   serviceGroups: [
     {
@@ -526,7 +524,7 @@ function ScanDivider({ label }) {
 function Logo({ onClick, dark }) {
   return (
     <div onClick={onClick} style={{ cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6 }}>
-      <span className="f-display" style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 600, letterSpacing: '0.02em', color: dark ? '#fff' : 'var(--ink)' }}>Linea</span>
+      <span className="f-display" style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 600, letterSpacing: '0.02em', color: dark ? '#fff' : 'var(--ink)' }}>Cosmetolog</span>
       <span className="f-mono" style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.6)' : 'var(--sage)' }}>studio</span>
     </div>
   );
@@ -693,7 +691,7 @@ function Footer({ setPage }) {
       </Container>
       <div style={{ borderTop: '1px solid rgba(246,240,236,0.15)' }}>
         <Container style={{ padding: '18px 24px', fontSize: 12, color: 'rgba(246,240,236,0.5)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-          <span>© {new Date().getFullYear()} Linea Studio. Усі процедури проводяться кваліфікованими фахівцями.</span>
+          <span>© {new Date().getFullYear()} Cosmetolog. Усі процедури проводяться кваліфікованими фахівцями.</span>
           <button onClick={() => setPage('admin')} style={{ background: 'none', border: 'none', color: 'rgba(246,240,236,0.5)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Панель адміністратора</button>
         </Container>
       </div>
