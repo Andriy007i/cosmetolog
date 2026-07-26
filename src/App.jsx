@@ -19,6 +19,61 @@ const WEEKDAYS_UA = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
 const TIME_SLOTS = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
 const ADMIN_CODE = 'linea2026';
 
+/* ---------------------------------------------------------
+   ПІДКЛЮЧЕННЯ РЕАЛЬНОГО СХОВИЩА (для роботи поза Claude.ai)
+   Заповніть ці два поля даними вашого проєкту Supabase, щоб
+   зміни в адмінці бачили всі відвідувачі сайту, а не лише ви.
+   Як отримати: supabase.com → New project → Settings → API.
+   Без них сайт працює в демо-режимі (зберігає лише локально).
+--------------------------------------------------------- */
+const SUPABASE_URL = '';       // напр. 'https://xxxxxxxx.supabase.co'
+const SUPABASE_ANON_KEY = '';  // публічний anon key з налаштувань проєкту
+
+// Ендпоінт форми на formspree.io — сюди прилітають заявки на пошту.
+// Створіть форму на https://formspree.io (безкоштовно) і вставте її URL.
+const FORMSPREE_ENDPOINT = ''; // напр. 'https://formspree.io/f/abcdwxyz'
+
+async function remoteGetSiteData() {
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/site_data?select=payload&id=eq.1`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+    });
+    if (!res.ok) throw new Error('supabase get failed');
+    const rows = await res.json();
+    return rows && rows[0] ? rows[0].payload : null;
+  }
+  if (typeof window !== 'undefined' && window.storage && window.storage.get) {
+    const r = await window.storage.get('site-data', true);
+    return r && r.value ? JSON.parse(r.value) : null;
+  }
+  try {
+    const local = window.localStorage.getItem('linea-site-data');
+    return local ? JSON.parse(local) : null;
+  } catch (e) { return null; }
+}
+
+async function remoteSetSiteData(data) {
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/site_data?id=eq.1`, {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({ payload: data }),
+    });
+    if (!res.ok) throw new Error('supabase set failed');
+    return;
+  }
+  if (typeof window !== 'undefined' && window.storage && window.storage.set) {
+    await window.storage.set('site-data', JSON.stringify(data), true);
+    return;
+  }
+  window.localStorage.setItem('linea-site-data', JSON.stringify(data));
+}
+
 const DEFAULT_DATA = {
   settings: {
     heroEyebrow: 'Студія косметології · Харків',
@@ -27,6 +82,10 @@ const DEFAULT_DATA = {
     phone: '+38 (050) 123-45-67',
     address: 'м. Харків, вул. Сумська, 15',
     hours: 'Щодня, 10:00–20:00',
+    instagramUrl: 'https://instagram.com/linea.studio',
+    telegramUrl: 'https://t.me/linea_studio',
+    whatsappUrl: 'https://wa.me/380501234567',
+    viberUrl: 'viber://chat?number=%2B380501234567',
   },
   serviceGroups: [
     {
@@ -573,6 +632,30 @@ function Header({ page, setPage }) {
   );
 }
 
+function TelegramGlyph() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 4 L2.5 11.3 L9.5 13.4 M21 4 L17.7 20.5 L9.5 13.4 M21 4 L9.5 13.4 M9.5 13.4 L9 18.2" />
+    </svg>
+  );
+}
+function WhatsAppGlyph() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20 L5.3 15.7 A8 8 0 1 1 8.4 18.8 Z" />
+      <path d="M8.6 8.8 C8.4 9.6 9 10.7 9.5 11.2 C10.2 12 11.2 12.7 12.1 13 C12.6 13.2 13.6 13.4 14 12.9 C14.3 12.6 14.5 12 14.4 11.6 C14.3 11.3 13 10.7 12.8 10.7 C12.6 10.7 12.4 11.1 12.2 11.3 C12 11.5 11.8 11.5 11.5 11.4 C10.9 11.1 10.1 10.4 9.8 9.8 C9.7 9.6 9.7 9.4 9.9 9.2 C10.1 9 10.4 8.7 10.3 8.5 C10.2 8.2 9.7 7 9.4 6.9 C9.1 6.8 8.8 8 8.6 8.8 Z" />
+    </svg>
+  );
+}
+function ViberGlyph() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 4c-4.4 0-7.5 2.8-7.5 7.2 0 2.8 1.4 5 3.7 6.3l-.5 3 3.2-2c.4 0 .7.1 1.1.1 4.4 0 7.5-2.8 7.5-7.4S16.4 4 12 4Z" />
+      <path d="M9.3 9.5c0 3 2.2 5.2 5.2 5.2M9.3 9.5c0-1.2.8-1.8 1.2-1.8M14.5 14.7c1.2 0 1.9-.9 1.9-1.3" />
+    </svg>
+  );
+}
+
 function Footer({ setPage }) {
   const { data } = useSiteData();
   return (
@@ -598,10 +681,20 @@ function Footer({ setPage }) {
         </div>
         <div>
           <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.5)', marginBottom: 14 }}>Соцмережі</p>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <span style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(246,240,236,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Camera size={16} /></span>
-            <span style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(246,240,236,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MessageCircle size={16} /></span>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            {[
+              { href: data.settings.instagramUrl, icon: <Camera size={16} />, label: 'Instagram' },
+              { href: data.settings.telegramUrl, icon: <TelegramGlyph />, label: 'Telegram' },
+              { href: data.settings.whatsappUrl, icon: <WhatsAppGlyph />, label: 'WhatsApp' },
+              { href: data.settings.viberUrl, icon: <ViberGlyph />, label: 'Viber' },
+            ].filter(s => s.href).map(s => (
+              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(246,240,236,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'inherit', textDecoration: 'none' }}>
+                {s.icon}
+              </a>
+            ))}
           </div>
+          <p className="f-mono" style={{ fontSize: 10, color: 'rgba(246,240,236,0.4)', marginTop: 10 }}>посилання редагуються в адмінці</p>
         </div>
       </Container>
       <div style={{ borderTop: '1px solid rgba(246,240,236,0.15)' }}>
@@ -669,16 +762,45 @@ function BookingForm({ dark }) {
   const [form, setForm] = useState({ firstName: '', lastName: '', service: '', date: null, time: '', phone: '' });
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [sending, setSending] = useState(false);
 
   const update = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     if (!form.firstName.trim() || !form.lastName.trim() || !form.service || !form.phone.trim() || !form.date || !form.time) {
       setError('Заповніть ім’я, прізвище, послугу, бажані дату і час, а також телефон.');
       return;
     }
     setError('');
+    const dateLabelForSend = form.date ? form.date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    if (FORMSPREE_ENDPOINT) {
+      setSending(true);
+      try {
+        const res = await fetch(FORMSPREE_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            _subject: `Нова заявка на запис — ${form.service}`,
+            'Ім\u2019я': form.firstName,
+            'Прізвище': form.lastName,
+            'Послуга': form.service,
+            'Бажана дата': dateLabelForSend,
+            'Бажаний час': form.time,
+            'Телефон': form.phone,
+          }),
+        });
+        setSending(false);
+        if (!res.ok) {
+          setError('Не вдалося надіслати заявку. Спробуйте ще раз або зателефонуйте нам напряму.');
+          return;
+        }
+      } catch (err) {
+        setSending(false);
+        setError('Не вдалося надіслати заявку — перевірте інтернет-з’єднання та спробуйте ще раз.');
+        return;
+      }
+    }
     setSent(true);
   };
 
@@ -736,8 +858,8 @@ function BookingForm({ dark }) {
         <input className="ls-input" placeholder="+38 (0__) ___-__-__" value={form.phone} onChange={update('phone')} />
       </div>
       {error && <p style={{ fontSize: 13, color: 'var(--clay-dark)', marginBottom: 16 }}>{error}</p>}
-      <button type="submit" className="ls-btn ls-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-        Надіслати заявку <Send size={15} />
+      <button type="submit" disabled={sending} className="ls-btn ls-btn-primary" style={{ width: '100%', justifyContent: 'center', opacity: sending ? 0.7 : 1, cursor: sending ? 'wait' : 'pointer' }}>
+        {sending ? 'Надсилаємо…' : <>Надіслати заявку <Send size={15} /></>}
       </button>
       <p style={{ fontSize: 12, color: labelColor, marginTop: 12 }}>
         Це заявка на зв’язок, а не підтверджений запис — точну дату та час узгодить косметолог.
@@ -1257,30 +1379,71 @@ function AdminPage() {
           <AdminField label="Телефон" value={draft.settings.phone} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, phone: e.target.value } }))} />
           <AdminField label="Адреса" value={draft.settings.address} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, address: e.target.value } }))} />
           <AdminField label="Години роботи" value={draft.settings.hours} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, hours: e.target.value } }))} />
+          <AdminField label="Instagram (посилання)" value={draft.settings.instagramUrl} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, instagramUrl: e.target.value } }))} />
+          <AdminField label="Telegram (посилання)" value={draft.settings.telegramUrl} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, telegramUrl: e.target.value } }))} />
+          <AdminField label="WhatsApp (посилання wa.me/...)" value={draft.settings.whatsappUrl} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, whatsappUrl: e.target.value } }))} />
+          <AdminField label="Viber (посилання)" value={draft.settings.viberUrl} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, viberUrl: e.target.value } }))} />
         </AdminSection>
+      )}
+
+      {tab === 'settings' && (
+        <div className="ls-card" style={{ padding: 20, background: 'var(--surface-soft)' }}>
+          <p style={{ fontSize: 13, marginBottom: 6 }}>
+            <strong>Спільне сховище (Supabase):</strong> {SUPABASE_URL ? 'підключено ✓' : 'не підключено — зміни бачите поки що лише ви, налаштуйте перед запуском (див. інструкцію в чаті)'}
+          </p>
+          <p style={{ fontSize: 13 }}>
+            <strong>Пошта для заявок (Formspree):</strong> {FORMSPREE_ENDPOINT ? 'підключено ✓' : 'не підключено — заявки поки нікуди не надсилаються (див. інструкцію в чаті)'}
+          </p>
+        </div>
       )}
     </Container>
   );
 }
 
+const PAGE_IDS = ['home', 'services', 'portfolio', 'reviews', 'contacts', 'admin'];
+
+function pathForPage(id) { return id === 'home' ? '/' : `/${id}`; }
+function pageForPath(pathname) {
+  const clean = (pathname || '/').replace(/\/+$/, '') || '/';
+  const id = clean === '/' ? 'home' : clean.slice(1);
+  return PAGE_IDS.includes(id) ? id : 'home';
+}
+
 export default function App() {
-  const [page, setPage] = useState('home');
+  const [page, setPageState] = useState(() => (typeof window !== 'undefined' ? pageForPath(window.location.pathname) : 'home'));
   const [data, setData] = useState(DEFAULT_DATA);
   const [ready, setReady] = useState(false);
+
+  // Справжня маршрутизація на history API: кнопка "назад" у браузері,
+  // свайп назад на мобільних та оновлення сторінки лишають на тій самій
+  // сторінці (за умови, що хостинг віддає index.html на будь-який шлях —
+  // це треба один раз налаштувати на боці хостингу, це не питання коду).
+  const navigate = useCallback((id, opts = {}) => {
+    if (!PAGE_IDS.includes(id)) id = 'home';
+    setPageState(id);
+    const path = pathForPage(id);
+    if (typeof window !== 'undefined' && window.location.pathname !== path) {
+      if (opts.replace) window.history.replaceState({ page: id }, '', path);
+      else window.history.pushState({ page: id }, '', path);
+    }
+  }, []);
+
+  useEffect(() => {
+    const onPop = () => setPageState(pageForPath(window.location.pathname));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        if (window.storage && window.storage.get) {
-          const res = await window.storage.get('site-data', true);
-          if (res && res.value && !cancelled) {
-            const parsed = JSON.parse(res.value);
-            setData(d => ({ ...d, ...parsed, settings: { ...d.settings, ...parsed.settings } }));
-          }
+        const parsed = await remoteGetSiteData();
+        if (parsed && !cancelled) {
+          setData(d => ({ ...d, ...parsed, settings: { ...d.settings, ...parsed.settings } }));
         }
       } catch (e) {
-        /* no saved data yet */
+        /* сховище ще порожнє або недоступне — лишаємось на дефолтних даних */
       }
       if (!cancelled) setReady(true);
     })();
@@ -1289,18 +1452,14 @@ export default function App() {
 
   const persist = async (newData) => {
     setData(newData);
-    try { 
-      if (window.storage && window.storage.set) {
-        await window.storage.set('site-data', JSON.stringify(newData), true); 
-      }
-    }
+    try { await remoteSetSiteData(newData); }
     catch (e) { console.error('storage error', e); }
   };
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [page]);
 
   const pages = {
-    home: <HomePage setPage={setPage} />,
+    home: <HomePage setPage={navigate} />,
     services: <ServicesPage />,
     portfolio: <PortfolioPage />,
     reviews: <ReviewsPage />,
@@ -1316,9 +1475,9 @@ export default function App() {
     <SiteDataContext.Provider value={{ data, persist }}>
       <div className="ls-root">
         <GlobalStyle />
-        <Header page={page} setPage={setPage} />
+        <Header page={page} setPage={navigate} />
         {pages[page]}
-        <Footer setPage={setPage} />
+        <Footer setPage={navigate} />
       </div>
     </SiteDataContext.Provider>
   );
