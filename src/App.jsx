@@ -978,7 +978,7 @@ function ServicesTeaser({ setPage }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
           <div>
             <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Що ми робимо</p>
-            <h2 className="f-display" style={{ fontSize: 'clamp(24px, 3.5vw, 32px)' }}>Три напрямки догляду</h2>
+            <h2 className="f-display" style={{ fontSize: 'clamp(24px, 3.5vw, 32px)' }}>Напрямки догляду</h2>
           </div>
           <button className="ls-btn ls-btn-outline" onClick={() => setPage('services')}>Усі послуги та ціни <ChevronRight size={15} /></button>
         </div>
