@@ -74,10 +74,10 @@ const DEFAULT_DATA = {
     phone: '+38 (067) 723-96-41',
     address: 'м. Харків, вул. Трінклера, 2',
     hours: 'Пн–Ср, Пт–Сб 11:00–19:00. Четвер та неділя — вихідні.',
-    instagramUrl: 'https://instagram.com/',
-    telegramUrl: 'https://t.me/Aandrey_07',
-    whatsappUrl: 'https://wa.me/380995485775',
-    viberUrl: 'viber://chat?number=%2B380995485775',
+    instagramUrl: 'https://www.instagram.com/cosmetolog_shulaeva?igsh=aTludnRlb2N4MTl6',
+    telegramUrl: 'https://t.me/ElenaShe1',
+    whatsappUrl: 'https://wa.me/380677239641',
+    viberUrl: 'viber://chat?number=%2B380677239641',
   },
   serviceGroups: [
     {
