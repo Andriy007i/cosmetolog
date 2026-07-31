@@ -1189,6 +1189,7 @@ function ReviewsPage() {
           </button>
         </div>
       </Reveal>
+      {showForm && <ReviewSubmitForm />}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 20 }}>
         {data.reviews.map((r, i) => (
           <Reveal key={r.name} delay={i * 0.06}>
