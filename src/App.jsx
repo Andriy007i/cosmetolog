@@ -3,7 +3,7 @@ import {
   Menu, X, ArrowUpRight, Star, MapPin, Phone, Clock,
   Camera, MessageCircle, Check, ChevronRight, ChevronLeft, Send,
   Plus, Trash2, Lock, Settings as SettingsIcon, Image as ImageIcon,
-  ListChecks, MessageSquare, RotateCcw, Upload
+  ListChecks, MessageSquare, RotateCcw, Upload, Bell
 } from 'lucide-react';
 
 const NAV = [
@@ -20,10 +20,10 @@ const TIME_SLOTS = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:
 const ADMIN_CODE = 'linea2026';
 
 
-const SUPABASE_URL = 'https://nkdgittctxmvbpwpskzv.supabase.co';       // напр. 'https://xxxxxxxx.supabase.co'
+const SUPABASE_URL = 'https://nkdgittctxmvbpwpskzv.supabase.co';    
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rZGdpdHRjdHhtdmJwd3Bza3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwNTIwMTEsImV4cCI6MjEwMDYyODAxMX0.Lpg6Kaf11_b0-4c0CmapEtTc_B1jARB014A_YjOAo_U';  // публічний anon key з налаштувань проєкту
 
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvzedgbk'; // напр. 'https://formspree.io/f/abcdwxyz'
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvzedgbk'; 
 
 async function remoteGetSiteData() {
   if (SUPABASE_URL && SUPABASE_ANON_KEY) {
@@ -68,12 +68,12 @@ async function remoteSetSiteData(data) {
 
 const DEFAULT_DATA = {
   settings: {
-    heroEyebrow: 'Студія косметології · Харків',
+    heroEyebrow: 'Студія косметології She· Харків',
     heroTitle: 'Догляд за шкірою, вибудований як протокол',
-    heroSubtitle: 'Діагностика шкіри, персональний план процедур та супровід лікаря-косметолога на кожному етапі — від першої чистки до курсу ін’єкційної корекції.',
-    phone: '+38 (050) 123-45-67',
-    address: 'м. Харків, вул. Сумська, 15',
-    hours: 'Щодня, 10:00–20:00',
+    heroSubtitle: 'Діагностика шкіри, персональний план процедур та супровід косметолога на кожному етапі — від першої чистки до курсу ін’єкційної корекції.',
+    phone: '+38 (067) 723-96-41',
+    address: 'м. Харків, вул. Трінклера, 2',
+    hours: 'Пн–Ср, Пт–Сб 11:00–19:00. Четвер та неділя — вихідні.',
     instagramUrl: 'https://instagram.com/',
     telegramUrl: 'https://t.me/Aandrey_07',
     whatsappUrl: 'https://wa.me/380995485775',
@@ -82,7 +82,6 @@ const DEFAULT_DATA = {
   serviceGroups: [
     {
       title: 'Догляд за обличчям',
-      note: 'база будь-якого протоколу',
       items: [
         { name: 'Комбінована чистка обличчя', price: 1200, time: '60 хв' },
         { name: 'Хімічний пілінг', price: 900, time: '40 хв' },
@@ -102,7 +101,7 @@ const DEFAULT_DATA = {
     },
     {
       title: 'Ін’єкційна косметологія',
-      note: 'проводить лікар-косметолог',
+      note: 'проводить косметолог',
       items: [
         { name: 'Біоревіталізація', price: 2500, time: '40 хв' },
         { name: 'Контурна пластика губ', price: 3200, time: '45 хв' },
@@ -117,11 +116,12 @@ const DEFAULT_DATA = {
     { title: 'Контурна пластика губ', tag: 'Ін’єкційна косметологія', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#D2B7AC,#AD897C)', after: 'linear-gradient(135deg,#F1D9CE,#FBEAE1)' },
   ],
   reviews: [
-    { name: 'Анна К.', service: 'Біоревіталізація', rating: 5, text: 'Шкіра стала помітно щільнішою вже після другої процедури. Косметолог детально пояснила протокол та підібрала домашній догляд.' },
+    { name: 'Анна К.', service: 'Біоревіталізація', rating: 5, text: 'Шкіра стала помітно щільнішою вже після другої процедури. Косметолог детально пояснила та підібрала домашній догляд.' },
     { name: 'Ірина С.', service: 'Комбінована чистка', rating: 5, text: 'Записалася вперше, боялася болю та почервонінь — усе пройшло акуратно, без стресу для шкіри. Записалася на курс.' },
     { name: 'Марія Д.', service: 'RF-ліфтинг', rating: 5, text: 'Результат видно вже після трьох сеансів із курсу. Овал обличчя підтягнувся, шкіра виглядає відпочилою.' },
     { name: 'Ольга П.', service: 'Контурна пластика губ', rating: 4, text: 'Дуже акуратна, природна корекція — саме те, про що я просила. Набряк зійшов на другий день.' },
   ],
+  pendingReviews: [],
 };
 
 const SiteDataContext = createContext(null);
@@ -386,94 +386,94 @@ function GlobalStyle() {
       }
       */
       /* --- Ultra-wide & Desktop Large --- */
-@media (min-width: 1920px) {
-  /* Стили для 4K и очень широких экранов */
-}
+      @media (min-width: 1920px) {
+        /* Стили для 4K и очень широких экранов */
+      }
 
-@media (min-width: 1600px) and (max-width: 1919px) {
-  /* Стили для больших мониторов */
-}
+      @media (min-width: 1600px) and (max-width: 1919px) {
+        /* Стили для больших мониторов */
+      }
 
-@media (min-width: 1440px) and (max-width: 1599px) {
-  /* Стили для стандартных desktop (включая MacBook 15" / 16") */
-}
+      @media (min-width: 1440px) and (max-width: 1599px) {
+        /* Стили для стандартных desktop (включая MacBook 15" / 16") */
+      }
 
-@media (min-width: 1280px) and (max-width: 1439px) {
-  /* Стили для ноутбуков 13"-14" */
-}
+      @media (min-width: 1280px) and (max-width: 1439px) {
+        /* Стили для ноутбуков 13"-14" */
+      }
 
-@media (min-width: 1024px) and (max-width: 1279px) {
-  /* Небольшие ноутбуки и горизонтальные планшеты */
-}
+      @media (min-width: 1024px) and (max-width: 1279px) {
+        /* Небольшие ноутбуки и горизонтальные планшеты */
+      }
 
-/* --- Tablets & Medium Screens --- */
-@media (min-width: 992px) and (max-width: 1023px) {
-  /* Переходная зона между десктопом и планшетом */
-}
+      /* --- Tablets & Medium Screens --- */
+      @media (min-width: 992px) and (max-width: 1023px) {
+        /* Переходная зона между десктопом и планшетом */
+      }
 
-@media (min-width: 768px) and (max-width: 991px) {
-  /* Планшеты (альбомная ориентация) */
-}
+      @media (min-width: 768px) and (max-width: 991px) {
+        /* Планшеты (альбомная ориентация) */
+      }
 
-@media (max-width: 767px) {
-  /* Планшеты (книжная ориентация) и мобильные */
-}
+      @media (max-width: 767px) {
+        /* Планшеты (книжная ориентация) и мобильные */
+      }
 
-/* --- Mobile Devices --- */
-@media (min-width: 576px) and (max-width: 766px) {
-  /* Большие смартфоны в горизонтальном режиме */
-}
+      /* --- Mobile Devices --- */
+      @media (min-width: 576px) and (max-width: 766px) {
+        /* Большие смартфоны в горизонтальном режиме */
+      }
 
-@media (min-width: 480px) and (max-width: 575px) {
-  /* Средние смартфоны */
-}
+      @media (min-width: 480px) and (max-width: 575px) {
+        /* Средние смартфоны */
+      }
 
-@media (min-width: 375px) and (max-width: 479px) {
-  /* Стандартные смартфоны (iPhone X/11/12/13/14/15) */
-}
+      @media (min-width: 375px) and (max-width: 479px) {
+        /* Стандартные смартфоны (iPhone X/11/12/13/14/15) */
+      }
 
-@media (max-width: 374px) {
-  /* Компактные смартфоны (iPhone SE, старые модели) */
-}
+      @media (max-width: 374px) {
+        /* Компактные смартфоны (iPhone SE, старые модели) */
+      }
 
-@media (max-width: 320px) {
-  /* Ультрамаленькие экраны */
-}
+      @media (max-width: 320px) {
+        /* Ультрамаленькие экраны */
+      }
 
-/* --- Orientation & Hover --- */
-@media (orientation: landscape) {
-  /* Альбомная ориентация */
-}
+      /* --- Orientation & Hover --- */
+      @media (orientation: landscape) {
+        /* Альбомная ориентация */
+      }
 
-@media (orientation: portrait) {
-  /* Книжная ориентация */
-}
+      @media (orientation: portrait) {
+        /* Книжная ориентация */
+      }
 
-@media (hover: hover) and (pointer: fine) {
-  /* Устройства с мышкой (поддержка :hover эффектов) */
-}
+      @media (hover: hover) and (pointer: fine) {
+        /* Устройства с мышкой (поддержка :hover эффектов) */
+      }
 
-@media (hover: none) and (pointer: coarse) {
-  /* Сенсорные экраны (без мышки, тач-устройства) */
-}
+      @media (hover: none) and (pointer: coarse) {
+        /* Сенсорные экраны (без мышки, тач-устройства) */
+      }
 
-/* --- Display Densities (Retina) --- */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  /* Экраны с высокой плотностью пикселей (Retina) */
-}
+      /* --- Display Densities (Retina) --- */
+      @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+        /* Экраны с высокой плотностью пикселей (Retina) */
+      }
 
-/* --- System Themes & Accessibility --- */
-@media (prefers-color-scheme: dark) {
-  /* Темная тема ОС */
-}
+      /* --- System Themes & Accessibility --- */
+      @media (prefers-color-scheme: dark) {
+        /* Темная тема ОС */
+      }
 
-@media (prefers-color-scheme: light) {
-  /* Светлая тема ОС */
-}
+      @media (prefers-color-scheme: light) {
+        /* Светлая тема ОС */
+      }
 
-@media (prefers-reduced-motion: reduce) {
-  /* Для пользователей, отключивших анимации в системе */
-}
+      @media (prefers-reduced-motion: reduce) {
+        /* Для пользователей, отключивших анимации в системе */
+      }
     `}</style>
   );
 }
@@ -524,7 +524,7 @@ function ScanDivider({ label }) {
 function Logo({ onClick, dark }) {
   return (
     <div onClick={onClick} style={{ cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6 }}>
-      <span className="f-display" style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 600, letterSpacing: '0.02em', color: dark ? '#fff' : 'var(--ink)' }}>Cosmetolog</span>
+      <span className="f-display" style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 600, letterSpacing: '0.02em', color: dark ? '#fff' : 'var(--ink)' }}>Студія Косметології She</span>
       <span className="f-mono" style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.6)' : 'var(--sage)' }}>studio</span>
     </div>
   );
@@ -655,7 +655,7 @@ function Footer({ setPage }) {
       <Container style={{ padding: 'clamp(40px, 6vw, 56px) clamp(16px, 4vw, 24px) 32px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 32 }}>
         <div>
           <Logo dark onClick={() => setPage('home')} />
-          <p style={{ fontSize: 13, marginTop: 16, maxWidth: 260, color: 'rgba(246,240,236,0.65)' }}>Студія косметології у Харкові. Індивідуальний підхід та протоколи під контролем лікаря-косметолога.</p>
+          <p style={{ fontSize: 13, marginTop: 16, maxWidth: 260, color: 'rgba(246,240,236,0.65)' }}>Студія косметології She у Харкові. Індивідуальний підхід під контролем косметолога.</p>
         </div>
         <div>
           <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.5)', marginBottom: 14 }}>Розділи</p>
@@ -691,7 +691,7 @@ function Footer({ setPage }) {
       </Container>
       <div style={{ borderTop: '1px solid rgba(246,240,236,0.15)' }}>
         <Container style={{ padding: '18px 24px', fontSize: 12, color: 'rgba(246,240,236,0.5)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-          <span>© {new Date().getFullYear()} Cosmetolog. Усі процедури проводяться кваліфікованими фахівцями.</span>
+          <span>© {new Date().getFullYear()} Студія Косметлогії She. Усі процедури проводяться кваліфікованими фахівцями.</span>
           <button onClick={() => setPage('admin')} style={{ background: 'none', border: 'none', color: 'rgba(246,240,236,0.5)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Панель адміністратора</button>
         </Container>
       </div>
@@ -940,7 +940,7 @@ function Hero({ setPage }) {
             </div>
             <div style={{ position: 'absolute', bottom: -22, left: -22, background: '#F6F0EC', color: 'var(--ink)', padding: '16px 20px', borderRadius: 2, maxWidth: 220, boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
               <p className="f-mono" style={{ fontSize: 11, color: 'var(--sage)', marginBottom: 4 }}>ДІАГНОСТИКА</p>
-              <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Кожен протокол починається з розбору стану шкіри</p>
+              <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Кожна процедура починається з розбору стану шкіри</p>
             </div>
           </div>
         </div>
@@ -951,9 +951,8 @@ function Hero({ setPage }) {
 
 function StatRow() {
   const stats = [
-    { n: '8 років', l: 'практики студії' },
-    { n: '3 200+', l: 'проведених процедур' },
-    { n: '12', l: 'протоколів догляду' },
+    { n: '14 років', l: 'практики студії' },
+    { n: '24000+', l: 'проведених процедур' },
     { n: '4.9', l: 'середня оцінка клієнтів' },
   ];
   return (
@@ -1063,7 +1062,7 @@ function ServicesPage() {
       <Reveal>
         <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Прайс-лист</p>
         <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: 16 }}>Послуги та ціни</h1>
-        <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 48 }}>Підсумкова вартість та протокол уточнюються після діагностики шкіри на первинній консультації — ціни нижче дійсні для однієї процедури.</p>
+        <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 48 }}>Підсумкова вартість та процедура уточнюються після діагностики шкіри на первинній консультації — ціни нижче дійсні для однієї процедури.</p>
       </Reveal>
       {data.serviceGroups.map((g) => (
         <Reveal key={g.title}>
@@ -1108,14 +1107,87 @@ function PortfolioPage() {
     </Container>
   );
 }
+function ReviewSubmitForm() {
+  const { data, submitPendingReview } = useSiteData();
+  const serviceNames = data.serviceGroups.flatMap(g => g.items.map(i => i.name));
+  const [form, setForm] = useState({ name: '', service: '', rating: 5, text: '' });
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+  const [sending, setSending] = useState(false);
 
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.service || !form.text.trim()) {
+      setError('Заповніть ім’я, послугу і текст відгуку.');
+      return;
+    }
+    setError('');
+    setSending(true);
+    try {
+      await submitPendingReview(form);
+      setSent(true);
+    } catch (err) {
+      setError('Не вдалося надіслати відгук. Спробуйте ще раз трохи пізніше.');
+    }
+    setSending(false);
+  };
+
+  if (sent) {
+    return (
+      <div className="ls-card" style={{ padding: 24, marginBottom: 32 }}>
+        <p className="f-display" style={{ fontSize: 18, marginBottom: 8 }}>Дякуємо за відгук!</p>
+        <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Він з’явиться на сайті протягом доби — щойно його перевірить адміністратор.</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="ls-card" style={{ padding: 24, marginBottom: 32 }}>
+      <div className="ls-admin-grid-2" style={{ marginBottom: 12 }}>
+        <div>
+          <label className="ls-label">Ваше ім’я</label>
+          <input className="ls-input" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Анна" />
+        </div>
+        <div>
+          <label className="ls-label">Послуга</label>
+          <select className="ls-input" value={form.service} onChange={(e) => setForm(f => ({ ...f, service: e.target.value }))}>
+            <option value="">Оберіть послугу</option>
+            {serviceNames.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+      </div>
+      <div style={{ marginBottom: 12 }}>
+        <label className="ls-label">Оцінка</label>
+        <select className="ls-input" value={form.rating} onChange={(e) => setForm(f => ({ ...f, rating: Number(e.target.value) }))}>
+          {[5,4,3,2,1].map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <label className="ls-label">Текст відгуку</label>
+        <textarea className="ls-input" rows={4} value={form.text} onChange={(e) => setForm(f => ({ ...f, text: e.target.value }))} />
+      </div>
+      {error && <p style={{ fontSize: 13, color: 'var(--clay-dark)', marginBottom: 12 }}>{error}</p>}
+      <button type="submit" disabled={sending} className="ls-btn ls-btn-primary" style={{ opacity: sending ? 0.7 : 1 }}>
+        {sending ? 'Надсилаємо…' : 'Надіслати відгук'}
+      </button>
+    </form>
+  );
+}
 function ReviewsPage() {
   const { data } = useSiteData();
+  const [showForm, setShowForm] = useState(false);
   return (
     <Container style={{ padding: 'clamp(32px, 5vw, 64px) clamp(16px, 4vw, 24px) clamp(48px, 8vw, 96px)' }}>
       <Reveal>
-        <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Думки клієнтів</p>
-        <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: 40 }}>Відгуки</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 40 }}>
+          <div>
+            <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Думки клієнтів</p>
+            <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4vw, 40px)' }}>Відгуки</h1>
+          </div>
+          <button className="ls-btn ls-btn-outline" onClick={() => setShowForm(s => !s)}>
+            {showForm ? 'Сховати форму' : 'Залишити відгук'}
+          </button>
+        </div>
       </Reveal>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 20 }}>
         {data.reviews.map((r, i) => (
@@ -1239,12 +1311,27 @@ function AdminPage() {
     setTimeout(() => setSavedMsg(''), 3000);
   };
 
+  const pendingCount = (data.pendingReviews || []).length;
   const tabs = [
     { id: 'services', label: 'Послуги', icon: <ListChecks size={16} /> },
     { id: 'portfolio', label: 'Портфоліо', icon: <ImageIcon size={16} /> },
     { id: 'reviews', label: 'Відгуки', icon: <MessageSquare size={16} /> },
+    { id: 'moderation', label: `Модерація${pendingCount ? ` (${pendingCount})` : ''}`, icon: <Bell size={16} /> },
     { id: 'settings', label: 'Налаштування', icon: <SettingsIcon size={16} /> },
   ];
+  const approveReview = async (review) => {
+    const updated = {
+      ...data,
+      reviews: [...data.reviews, { name: review.name, service: review.service, rating: review.rating, text: review.text }],
+      pendingReviews: (data.pendingReviews || []).filter(r => r.id !== review.id),
+    };
+    await persist(updated);
+  };
+
+  const rejectReview = async (review) => {
+    const updated = { ...data, pendingReviews: (data.pendingReviews || []).filter(r => r.id !== review.id) };
+    await persist(updated);
+  };
 
   return (
     <Container style={{ padding: 'clamp(32px, 5vw, 48px) clamp(16px, 4vw, 24px) clamp(48px, 8vw, 96px)' }}>
@@ -1344,7 +1431,13 @@ function AdminPage() {
             >
               <div className="ls-admin-grid-2">
                 <AdminField label="Ім’я" value={r.name} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], name: e.target.value }; return { ...d, reviews: rv }; })} />
-                <AdminField label="Послуга" value={r.service} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], service: e.target.value }; return { ...d, reviews: rv }; })} />
+                <div>
+                  <label className="ls-label">Послуга</label>
+                  <select className="ls-input" value={r.service} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], service: e.target.value }; return { ...d, reviews: rv }; })}>
+                    <option value="">Оберіть послугу</option>
+                    {draft.serviceGroups.flatMap(g => g.items.map(i => i.name)).map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
               </div>
               <div style={{ marginBottom: 10 }}>
                 <label className="ls-label">Оцінка</label>
@@ -1357,6 +1450,34 @@ function AdminPage() {
             </AdminSection>
           ))}
           <button className="ls-btn ls-btn-outline" onClick={() => setDraft(d => ({ ...d, reviews: [...d.reviews, { name: '', service: '', rating: 5, text: '' }] }))}><Plus size={15} /> Додати відгук</button>
+        </div>
+      )}
+      {tab === 'moderation' && (
+        <div>
+          {(data.pendingReviews || []).length === 0 && (
+            <p style={{ fontSize: 14, color: 'var(--ink-faint)' }}>Немає відгуків, що очікують модерації.</p>
+          )}
+          {(data.pendingReviews || []).map((r) => (
+            <AdminSection
+              key={r.id}
+              title={r.name || 'Без імені'}
+              icon={<MessageSquare size={16} color="var(--sage)" />}
+              actions={
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button className="ls-btn ls-btn-primary ls-btn-sm" onClick={() => approveReview(r)}><Check size={14} /> Підтвердити</button>
+                  <button className="ls-btn-danger" onClick={() => rejectReview(r)}><X size={15} /></button>
+                </div>
+              }
+            >
+              <div style={{ display: 'flex', gap: 3, marginBottom: 10 }}>
+                {Array.from({ length: 5 }).map((_, si) => (
+                  <Star key={si} size={14} fill={si < r.rating ? '#C97B6D' : 'none'} color={si < r.rating ? '#C97B6D' : 'var(--line)'} />
+                ))}
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: 8 }}>{r.text}</p>
+              <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)' }}>{r.service} · {new Date(r.createdAt).toLocaleString('uk-UA')}</p>
+            </AdminSection>
+          ))}
         </div>
       )}
 
@@ -1463,7 +1584,40 @@ export default function App() {
     try { await remoteSetSiteData(newData); }
     catch (e) { console.error('storage error', e); }
   };
+  const submitPendingReview = async (review) => {
+    let latest = data;
+    try {
+      const fresh = await remoteGetSiteData();
+      if (fresh) latest = { ...data, ...fresh, settings: { ...data.settings, ...fresh.settings } };
+    } catch (e) { /* если не удалось — работаем с тем, что уже в стейте */ }
 
+    const newReview = {
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
+      name: review.name,
+      service: review.service,
+      rating: review.rating,
+      text: review.text,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = { ...latest, pendingReviews: [...(latest.pendingReviews || []), newReview] };
+    await persist(updated);
+
+    if (FORMSPREE_ENDPOINT) {
+      try {
+        await fetch(FORMSPREE_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            _subject: `Новий відгук на модерацію — ${review.name}`,
+            'Ім\u2019я': review.name,
+            'Послуга': review.service,
+            'Оцінка': review.rating,
+            'Текст відгуку': review.text,
+          }),
+        });
+      } catch (e) { /* відгук уже збережено в базі — лист другорядний */ }
+    }
+  };
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [page]);
 
   const pages = {
@@ -1480,7 +1634,7 @@ export default function App() {
   }
 
   return (
-    <SiteDataContext.Provider value={{ data, persist }}>
+    <SiteDataContext.Provider value={{ data, persist, submitPendingReview}}>
       <div className="ls-root">
         <GlobalStyle />
         <Header page={page} setPage={navigate} />
