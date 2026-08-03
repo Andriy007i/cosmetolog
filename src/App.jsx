@@ -28,6 +28,30 @@ const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvzedgbk';
 const TELEGRAM_BOT_TOKEN = '8733289642:AAH3yI5RVU435qPUng14_FxgMDtE54rEHxk'; 
 const TELEGRAM_CHAT_ID = '5229852402';
 
+async function sendTelegramMessage(text) {
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: text,
+        parse_mode: 'HTML', // Позволяет использовать жирный шрифт <b></b> и переносы строк
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка при отправке в Telegram');
+    }
+    return true;
+  } catch (error) {
+    console.error('Telegram Send Error:', error);
+    return false;
+  }
+}
+
 async function remoteGetSiteData() {
   if (SUPABASE_URL && SUPABASE_ANON_KEY) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/site_data?select=payload&id=eq.1`, {
@@ -763,40 +787,41 @@ function BookingForm({ dark }) {
 
   const submit = async (e) => {
     e.preventDefault();
+    
+    // Проверка заполнения полей (оставляем вашу оригинальную валидацию)
     if (!form.firstName.trim() || !form.lastName.trim() || !form.service || !form.phone.trim() || !form.date || !form.time) {
       setError('Заповніть ім’я, прізвище, послугу, бажані дату і час, а також телефон.');
       return;
     }
     setError('');
-    const dateLabelForSend = form.date ? form.date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-    if (FORMSPREE_ENDPOINT) {
-      setSending(true);
-      try {
-        const res = await fetch(FORMSPREE_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            _subject: `Нова заявка на запис — ${form.service}`,
-            'Ім\u2019я': form.firstName,
-            'Прізвище': form.lastName,
-            'Послуга': form.service,
-            'Бажана дата': dateLabelForSend,
-            'Бажаний час': form.time,
-            'Телефон': form.phone,
-          }),
-        });
-        setSending(false);
-        if (!res.ok) {
-          setError('Не вдалося надіслати заявку. Спробуйте ще раз або зателефонуйте нам напряму.');
-          return;
-        }
-      } catch (err) {
-        setSending(false);
-        setError('Не вдалося надіслати заявку — перевірте інтернет-з’єднання та спробуйте ще раз.');
-        return;
-      }
+    
+    setSending(true);
+
+    const dateLabelForSend = form.date 
+      ? form.date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' }) 
+      : 'Не вказано';
+
+    // Формируем сообщение для Telegram
+    const message = `
+<b>✨ НОВА ЗАЯВКА НА ЗАПИС!</b>
+
+<b>Клієнт:</b> ${form.firstName.trim()} ${form.lastName.trim()}
+<b>Телефон:</b> ${form.phone.trim()}
+<b>Послуга:</b> ${form.service}
+<b>Дата:</b> ${dateLabelForSend}
+<b>Час:</b> ${form.time}
+    `;
+
+    // Отправляем сообщение в Telegram
+    const ok = await sendTelegramMessage(message);
+
+    setSending(false);
+
+    if (ok) {
+      setSent(true);
+    } else {
+      setError('Не вдалося надіслати заявку — перевірте інтернет-з’єднання та спробуйте ще раз.');
     }
-    setSent(true);
   };
 
   const labelColor = dark ? 'rgba(246,240,236,0.7)' : 'var(--ink-soft)';
@@ -1606,20 +1631,23 @@ export default function App() {
     const updated = { ...latest, pendingReviews: [...(latest.pendingReviews || []), newReview] };
     await persist(updated);
 
-    if (FORMSPREE_ENDPOINT) {
-      try {
-        await fetch(FORMSPREE_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            _subject: `Новий відгук на модерацію — ${review.name}`,
-            'Ім\u2019я': review.name,
-            'Послуга': review.service,
-            'Оцінка': review.rating,
-            'Текст відгуку': review.text,
-          }),
-        });
-      } catch (e) { /* відгук уже збережено в базі — лист другорядний */ }
+    // Формуємо красивий текст для Telegram
+    const stars = '⭐'.repeat(review.rating);
+    const message = `
+    <b>💬 НОВИЙ ВІДГУК НА МОДЕРАЦІЮ!</b>
+
+    <b>Ім'я:</b> ${review.name}
+    <b>Послуга:</b> ${review.service}
+    <b>Оцінка:</b> ${stars} (${review.rating}/5)
+    <b>Текст відгуку:</b>
+    ${review.text}
+    `;
+
+    // Відправляємо в Telegram (помилка не блокує збереження відгуку)
+    try {
+      await sendTelegramMessage(message);
+    } catch (e) {
+      /* відгук уже збережено в базі — сповіщення другорядне */
     }
   };
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [page]);
