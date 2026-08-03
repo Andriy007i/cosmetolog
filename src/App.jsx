@@ -17,13 +17,16 @@ const NAV = [
 const MONTHS_UA = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
 const WEEKDAYS_UA = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
 const TIME_SLOTS = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
-const ADMIN_CODE = 'linea2026';
+const ADMIN_CODE = 'L_Cosmetolog2012';
 
 
 const SUPABASE_URL = 'https://nkdgittctxmvbpwpskzv.supabase.co';    
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rZGdpdHRjdHhtdmJwd3Bza3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwNTIwMTEsImV4cCI6MjEwMDYyODAxMX0.Lpg6Kaf11_b0-4c0CmapEtTc_B1jARB014A_YjOAo_U';  // публічний anon key з налаштувань проєкту
 
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvzedgbk'; 
+
+const TELEGRAM_BOT_TOKEN = '8733289642:AAH3yI5RVU435qPUng14_FxgMDtE54rEHxk'; 
+const TELEGRAM_CHAT_ID = '5229852402';
 
 async function remoteGetSiteData() {
   if (SUPABASE_URL && SUPABASE_ANON_KEY) {
@@ -686,7 +689,7 @@ function Footer({ setPage }) {
               </a>
             ))}
           </div>
-          <p className="f-mono" style={{ fontSize: 10, color: 'rgba(246,240,236,0.4)', marginTop: 10 }}>посилання редагуються в адмінці</p>
+          <p className="f-mono" style={{ fontSize: 10, color: 'rgba(246,240,236,0.4)', marginTop: 10 }}></p>
         </div>
       </Container>
       <div style={{ borderTop: '1px solid rgba(246,240,236,0.15)' }}>
@@ -1097,7 +1100,7 @@ function PortfolioPage() {
         <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Результати</p>
         <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: 16 }}>Портфоліо</h1>
         <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 16 }}>Потягніть за розділювач, щоб порівняти стан шкіри до та після курсу процедур.</p>
-        <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)', marginBottom: 40 }}>* завантажте реальні фото через панель адміністратора або використовуйте заглушки</p>
+        <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)', marginBottom: 40 }}></p>
       </Reveal>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 32 }}>
         {data.cases.map((c, i) => (
@@ -1263,7 +1266,7 @@ function AdminGate({ onUnlock }) {
           {error && <p style={{ fontSize: 13, color: 'var(--clay-dark)', marginBottom: 12 }}>{error}</p>}
           <button className="ls-btn ls-btn-primary" style={{ width: '100%', justifyContent: 'center' }} type="submit">Увійти</button>
         </form>
-        <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 16 }}>демо-код: {ADMIN_CODE}</p>
+        <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 16 }}></p>
       </div>
     </Container>
   );
