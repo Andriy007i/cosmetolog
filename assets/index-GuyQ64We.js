@@ -241,7 +241,11 @@ Error generating stack: `+e.message+`
         align-items: center;
         margin-bottom: 8px;
       }
-
+      @media (max-width: 1100px) {
+        .ls-hide-mobile {
+        display: none !important;
+        }
+      }
       /* Медіа-запити для чутливості екранів */
       @media (max-width: 1024px) {
         .ls-hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
