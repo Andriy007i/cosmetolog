@@ -966,7 +966,7 @@ function Hero({ setPage }) {
               <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(246,240,236,0.08) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
               <div className="ls-scan" style={{ position: 'absolute', left: 24, right: 24, top: '50%', background: 'rgba(246,240,236,0.25)' }} />
             </div>
-            <div style={{ position: 'absolute', bottom: -22, left: -22, background: '#F6F0EC', color: 'var(--ink)', padding: '16px 20px', borderRadius: 2, maxWidth: 220, boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
+            <div style={{ position: 'absolute', bottom: -22, left: -22, background: '#acbf68', color: 'var(--ink)', padding: '16px 20px', borderRadius: 2, maxWidth: 220, boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
               <p className="f-mono" style={{ fontSize: 11, color: 'var(--sage)', marginBottom: 4 }}>ДІАГНОСТИКА</p>
               <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Кожна процедура починається з розбору стану шкіри</p>
             </div>
