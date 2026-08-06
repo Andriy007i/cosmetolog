@@ -3,7 +3,7 @@ import {
   Menu, X, ArrowUpRight, Star, MapPin, Phone, Clock,
   Camera, MessageCircle, Check, ChevronRight, ChevronLeft, Send,
   Plus, Trash2, Lock, Settings as SettingsIcon, Image as ImageIcon,
-  ListChecks, MessageSquare, RotateCcw, Upload
+  ListChecks, MessageSquare, RotateCcw, Upload, Bell
 } from 'lucide-react';
 
 const NAV = [
@@ -17,21 +17,98 @@ const NAV = [
 const MONTHS_UA = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
 const WEEKDAYS_UA = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
 const TIME_SLOTS = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
-const ADMIN_CODE = 'linea2026';
+const ADMIN_CODE = 'L_Cosmetolog2012';
+
+
+const SUPABASE_URL = 'https://nkdgittctxmvbpwpskzv.supabase.co';    
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rZGdpdHRjdHhtdmJwd3Bza3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwNTIwMTEsImV4cCI6MjEwMDYyODAxMX0.Lpg6Kaf11_b0-4c0CmapEtTc_B1jARB014A_YjOAo_U';  // публічний anon key з налаштувань проєкту
+
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvzedgbk'; 
+
+const TELEGRAM_BOT_TOKEN = '8733289642:AAH3yI5RVU435qPUng14_FxgMDtE54rEHxk'; 
+const TELEGRAM_CHAT_ID = '5229852402';
+
+async function sendTelegramMessage(text) {
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: text,
+        parse_mode: 'HTML', // Позволяет использовать жирный шрифт <b></b> и переносы строк
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка при отправке в Telegram');
+    }
+    return true;
+  } catch (error) {
+    console.error('Telegram Send Error:', error);
+    return false;
+  }
+}
+
+async function remoteGetSiteData() {
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/site_data?select=payload&id=eq.1`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+    });
+    if (!res.ok) throw new Error('supabase get failed');
+    const rows = await res.json();
+    return rows && rows[0] ? rows[0].payload : null;
+  }
+  if (typeof window !== 'undefined' && window.storage && window.storage.get) {
+    const r = await window.storage.get('site-data', true);
+    return r && r.value ? JSON.parse(r.value) : null;
+  }
+  try {
+    const local = window.localStorage.getItem('linea-site-data');
+    return local ? JSON.parse(local) : null;
+  } catch (e) { return null; }
+}
+
+async function remoteSetSiteData(data) {
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/site_data?id=eq.1`, {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({ payload: data }),
+    });
+    if (!res.ok) throw new Error('supabase set failed');
+    return;
+  }
+  if (typeof window !== 'undefined' && window.storage && window.storage.set) {
+    await window.storage.set('site-data', JSON.stringify(data), true);
+    return;
+  }
+  window.localStorage.setItem('linea-site-data', JSON.stringify(data));
+}
 
 const DEFAULT_DATA = {
   settings: {
-    heroEyebrow: 'Студія косметології · Харків',
-    heroTitle: 'Догляд за шкірою, вибудований як протокол',
-    heroSubtitle: 'Діагностика шкіри, персональний план процедур та супровід лікаря-косметолога на кожному етапі — від першої чистки до курсу ін’єкційної корекції.',
-    phone: '+38 (050) 123-45-67',
-    address: 'м. Харків, вул. Сумська, 15',
-    hours: 'Щодня, 10:00–20:00',
+    heroEyebrow: 'Студія косметології She· Харків',
+    heroTitle: 'Твоя ідеальна шкіра без зайвих рухів',
+    heroSubtitle: 'Діагностика шкіри, персональний план процедур та супровід косметолога на кожному етапі — від першої чистки до курсу ін’єкційної корекції.',
+    phone: '+38 (067) 723-96-41',
+    address: 'м. Харків, вул. Трінклера, 2',
+    hours: 'Пн–Ср, Пт–Сб 11:00–19:00. Четвер та неділя — вихідні.',
+    instagramUrl: 'https://www.instagram.com/cosmetolog_shulaeva?igsh=aTludnRlb2N4MTl6',
+    telegramUrl: 'https://t.me/ElenaShe1',
+    whatsappUrl: 'https://wa.me/380677239641',
+    viberUrl: 'viber://chat?number=%2B380677239641',
   },
   serviceGroups: [
     {
       title: 'Догляд за обличчям',
-      note: 'база будь-якого протоколу',
       items: [
         { name: 'Комбінована чистка обличчя', price: 1200, time: '60 хв' },
         { name: 'Хімічний пілінг', price: 900, time: '40 хв' },
@@ -51,7 +128,7 @@ const DEFAULT_DATA = {
     },
     {
       title: 'Ін’єкційна косметологія',
-      note: 'проводить лікар-косметолог',
+      note: 'проводить косметолог',
       items: [
         { name: 'Біоревіталізація', price: 2500, time: '40 хв' },
         { name: 'Контурна пластика губ', price: 3200, time: '45 хв' },
@@ -66,11 +143,12 @@ const DEFAULT_DATA = {
     { title: 'Контурна пластика губ', tag: 'Ін’єкційна косметологія', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#D2B7AC,#AD897C)', after: 'linear-gradient(135deg,#F1D9CE,#FBEAE1)' },
   ],
   reviews: [
-    { name: 'Анна К.', service: 'Біоревіталізація', rating: 5, text: 'Шкіра стала помітно щільнішою вже після другої процедури. Косметолог детально пояснила протокол та підібрала домашній догляд.' },
+    { name: 'Анна К.', service: 'Біоревіталізація', rating: 5, text: 'Шкіра стала помітно щільнішою вже після другої процедури. Косметолог детально пояснила та підібрала домашній догляд.' },
     { name: 'Ірина С.', service: 'Комбінована чистка', rating: 5, text: 'Записалася вперше, боялася болю та почервонінь — усе пройшло акуратно, без стресу для шкіри. Записалася на курс.' },
     { name: 'Марія Д.', service: 'RF-ліфтинг', rating: 5, text: 'Результат видно вже після трьох сеансів із курсу. Овал обличчя підтягнувся, шкіра виглядає відпочилою.' },
     { name: 'Ольга П.', service: 'Контурна пластика губ', rating: 4, text: 'Дуже акуратна, природна корекція — саме те, про що я просила. Набряк зійшов на другий день.' },
   ],
+  pendingReviews: [],
 };
 
 const SiteDataContext = createContext(null);
@@ -112,6 +190,7 @@ function GlobalStyle() {
         display: flex;
         flex-direction: column;
         width: 100%;
+        padding-top: 76px;
       }
       .ls-root * { box-sizing: border-box; }
       .f-display { font-family: 'Fraunces', serif; }
@@ -335,94 +414,94 @@ function GlobalStyle() {
       }
       */
       /* --- Ultra-wide & Desktop Large --- */
-@media (min-width: 1920px) {
-  /* Стили для 4K и очень широких экранов */
-}
+      @media (min-width: 1920px) {
+        /* Стили для 4K и очень широких экранов */
+      }
 
-@media (min-width: 1600px) and (max-width: 1919px) {
-  /* Стили для больших мониторов */
-}
+      @media (min-width: 1600px) and (max-width: 1919px) {
+        /* Стили для больших мониторов */
+      }
 
-@media (min-width: 1440px) and (max-width: 1599px) {
-  /* Стили для стандартных desktop (включая MacBook 15" / 16") */
-}
+      @media (min-width: 1440px) and (max-width: 1599px) {
+        /* Стили для стандартных desktop (включая MacBook 15" / 16") */
+      }
 
-@media (min-width: 1280px) and (max-width: 1439px) {
-  /* Стили для ноутбуков 13"-14" */
-}
+      @media (min-width: 1280px) and (max-width: 1439px) {
+        /* Стили для ноутбуков 13"-14" */
+      }
 
-@media (min-width: 1024px) and (max-width: 1279px) {
-  /* Небольшие ноутбуки и горизонтальные планшеты */
-}
+      @media (min-width: 1024px) and (max-width: 1279px) {
+        /* Небольшие ноутбуки и горизонтальные планшеты */
+      }
 
-/* --- Tablets & Medium Screens --- */
-@media (min-width: 992px) and (max-width: 1023px) {
-  /* Переходная зона между десктопом и планшетом */
-}
+      /* --- Tablets & Medium Screens --- */
+      @media (min-width: 992px) and (max-width: 1023px) {
+        /* Переходная зона между десктопом и планшетом */
+      }
 
-@media (min-width: 768px) and (max-width: 991px) {
-  /* Планшеты (альбомная ориентация) */
-}
+      @media (min-width: 768px) and (max-width: 991px) {
+        /* Планшеты (альбомная ориентация) */
+      }
 
-@media (max-width: 767px) {
-  /* Планшеты (книжная ориентация) и мобильные */
-}
+      @media (max-width: 767px) {
+        /* Планшеты (книжная ориентация) и мобильные */
+      }
 
-/* --- Mobile Devices --- */
-@media (min-width: 576px) and (max-width: 766px) {
-  /* Большие смартфоны в горизонтальном режиме */
-}
+      /* --- Mobile Devices --- */
+      @media (min-width: 576px) and (max-width: 766px) {
+        /* Большие смартфоны в горизонтальном режиме */
+      }
 
-@media (min-width: 480px) and (max-width: 575px) {
-  /* Средние смартфоны */
-}
+      @media (min-width: 480px) and (max-width: 575px) {
+        /* Средние смартфоны */
+      }
 
-@media (min-width: 375px) and (max-width: 479px) {
-  /* Стандартные смартфоны (iPhone X/11/12/13/14/15) */
-}
+      @media (min-width: 375px) and (max-width: 479px) {
+        /* Стандартные смартфоны (iPhone X/11/12/13/14/15) */
+      }
 
-@media (max-width: 374px) {
-  /* Компактные смартфоны (iPhone SE, старые модели) */
-}
+      @media (max-width: 374px) {
+        /* Компактные смартфоны (iPhone SE, старые модели) */
+      }
 
-@media (max-width: 320px) {
-  /* Ультрамаленькие экраны */
-}
+      @media (max-width: 320px) {
+        /* Ультрамаленькие экраны */
+      }
 
-/* --- Orientation & Hover --- */
-@media (orientation: landscape) {
-  /* Альбомная ориентация */
-}
+      /* --- Orientation & Hover --- */
+      @media (orientation: landscape) {
+        /* Альбомная ориентация */
+      }
 
-@media (orientation: portrait) {
-  /* Книжная ориентация */
-}
+      @media (orientation: portrait) {
+        /* Книжная ориентация */
+      }
 
-@media (hover: hover) and (pointer: fine) {
-  /* Устройства с мышкой (поддержка :hover эффектов) */
-}
+      @media (hover: hover) and (pointer: fine) {
+        /* Устройства с мышкой (поддержка :hover эффектов) */
+      }
 
-@media (hover: none) and (pointer: coarse) {
-  /* Сенсорные экраны (без мышки, тач-устройства) */
-}
+      @media (hover: none) and (pointer: coarse) {
+        /* Сенсорные экраны (без мышки, тач-устройства) */
+      }
 
-/* --- Display Densities (Retina) --- */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  /* Экраны с высокой плотностью пикселей (Retina) */
-}
+      /* --- Display Densities (Retina) --- */
+      @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+        /* Экраны с высокой плотностью пикселей (Retina) */
+      }
 
-/* --- System Themes & Accessibility --- */
-@media (prefers-color-scheme: dark) {
-  /* Темная тема ОС */
-}
+      /* --- System Themes & Accessibility --- */
+      @media (prefers-color-scheme: dark) {
+        /* Темная тема ОС */
+      }
 
-@media (prefers-color-scheme: light) {
-  /* Светлая тема ОС */
-}
+      @media (prefers-color-scheme: light) {
+        /* Светлая тема ОС */
+      }
 
-@media (prefers-reduced-motion: reduce) {
-  /* Для пользователей, отключивших анимации в системе */
-}
+      @media (prefers-reduced-motion: reduce) {
+        /* Для пользователей, отключивших анимации в системе */
+      }
     `}</style>
   );
 }
@@ -473,7 +552,7 @@ function ScanDivider({ label }) {
 function Logo({ onClick, dark }) {
   return (
     <div onClick={onClick} style={{ cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6 }}>
-      <span className="f-display" style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 600, letterSpacing: '0.02em', color: dark ? '#fff' : 'var(--ink)' }}>Linea</span>
+      <span className="f-display" style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 600, letterSpacing: '0.02em', color: dark ? '#fff' : 'var(--ink)' }}>Студія Косметології She</span>
       <span className="f-mono" style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.6)' : 'var(--sage)' }}>studio</span>
     </div>
   );
@@ -539,14 +618,16 @@ function ImageUploader({ value, onChange, label }) {
 function Header({ page, setPage }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
   const go = (id) => { setPage(id); setOpen(false); };
   return (
-    <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(246,240,236,0.92)', backdropFilter: 'blur(6px)', borderBottom: '1px solid var(--line)', boxShadow: scrolled ? '0 6px 20px rgba(38,34,31,0.06)' : 'none', transition: 'box-shadow 0.25s ease' }}>
+    <header style={{ position: 'fixed', top: 0, zIndex: 40, background: 'rgba(246,240,236,0.92)', backdropFilter: 'blur(6px)', borderBottom: '1px solid var(--line)', boxShadow: scrolled ? '0 6px 20px rgba(38,34,31,0.06)' : 'none', transition: 'box-shadow 0.25s ease' }}>
       <Container style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 'clamp(60px, 8vw, 76px)' }}>
         <Logo onClick={() => go('home')} />
         <nav className="ls-hide-mobile" style={{ display: 'flex', gap: 'clamp(16px, 2.5vw, 32px)', alignItems: 'center' }}>
@@ -573,6 +654,30 @@ function Header({ page, setPage }) {
   );
 }
 
+function TelegramGlyph() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 4 L2.5 11.3 L9.5 13.4 M21 4 L17.7 20.5 L9.5 13.4 M21 4 L9.5 13.4 M9.5 13.4 L9 18.2" />
+    </svg>
+  );
+}
+function WhatsAppGlyph() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20 L5.3 15.7 A8 8 0 1 1 8.4 18.8 Z" />
+      <path d="M8.6 8.8 C8.4 9.6 9 10.7 9.5 11.2 C10.2 12 11.2 12.7 12.1 13 C12.6 13.2 13.6 13.4 14 12.9 C14.3 12.6 14.5 12 14.4 11.6 C14.3 11.3 13 10.7 12.8 10.7 C12.6 10.7 12.4 11.1 12.2 11.3 C12 11.5 11.8 11.5 11.5 11.4 C10.9 11.1 10.1 10.4 9.8 9.8 C9.7 9.6 9.7 9.4 9.9 9.2 C10.1 9 10.4 8.7 10.3 8.5 C10.2 8.2 9.7 7 9.4 6.9 C9.1 6.8 8.8 8 8.6 8.8 Z" />
+    </svg>
+  );
+}
+function ViberGlyph() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 4c-4.4 0-7.5 2.8-7.5 7.2 0 2.8 1.4 5 3.7 6.3l-.5 3 3.2-2c.4 0 .7.1 1.1.1 4.4 0 7.5-2.8 7.5-7.4S16.4 4 12 4Z" />
+      <path d="M9.3 9.5c0 3 2.2 5.2 5.2 5.2M9.3 9.5c0-1.2.8-1.8 1.2-1.8M14.5 14.7c1.2 0 1.9-.9 1.9-1.3" />
+    </svg>
+  );
+}
+
 function Footer({ setPage }) {
   const { data } = useSiteData();
   return (
@@ -580,7 +685,7 @@ function Footer({ setPage }) {
       <Container style={{ padding: 'clamp(40px, 6vw, 56px) clamp(16px, 4vw, 24px) 32px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 32 }}>
         <div>
           <Logo dark onClick={() => setPage('home')} />
-          <p style={{ fontSize: 13, marginTop: 16, maxWidth: 260, color: 'rgba(246,240,236,0.65)' }}>Студія косметології у Харкові. Індивідуальний підхід та протоколи під контролем лікаря-косметолога.</p>
+          <p style={{ fontSize: 13, marginTop: 16, maxWidth: 260, color: 'rgba(246,240,236,0.65)' }}>Студія косметології She у Харкові. Індивідуальний підхід під контролем косметолога.</p>
         </div>
         <div>
           <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.5)', marginBottom: 14 }}>Розділи</p>
@@ -592,21 +697,36 @@ function Footer({ setPage }) {
         </div>
         <div>
           <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.5)', marginBottom: 14 }}>Контакти</p>
-          <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}><Phone size={14} /> {data.settings.phone}</p>
+          <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
+            <Phone size={14} /> 
+            <a href={`tel:${data.settings.phone.replace(/[^+\d]/g, '')}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+              {data.settings.phone}
+            </a>
+          </p>
           <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}><MapPin size={14} /> {data.settings.address}</p>
           <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center' }}><Clock size={14} /> {data.settings.hours}</p>
         </div>
         <div>
           <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.5)', marginBottom: 14 }}>Соцмережі</p>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <span style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(246,240,236,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Camera size={16} /></span>
-            <span style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(246,240,236,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MessageCircle size={16} /></span>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            {[
+              { href: data.settings.instagramUrl, icon: <Camera size={16} />, label: 'Instagram' },
+              { href: data.settings.telegramUrl, icon: <TelegramGlyph />, label: 'Telegram' },
+              { href: data.settings.whatsappUrl, icon: <WhatsAppGlyph />, label: 'WhatsApp' },
+              { href: data.settings.viberUrl, icon: <ViberGlyph />, label: 'Viber' },
+            ].filter(s => s.href).map(s => (
+              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(246,240,236,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'inherit', textDecoration: 'none' }}>
+                {s.icon}
+              </a>
+            ))}
           </div>
+          <p className="f-mono" style={{ fontSize: 10, color: 'rgba(246,240,236,0.4)', marginTop: 10 }}></p>
         </div>
       </Container>
       <div style={{ borderTop: '1px solid rgba(246,240,236,0.15)' }}>
         <Container style={{ padding: '18px 24px', fontSize: 12, color: 'rgba(246,240,236,0.5)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-          <span>© {new Date().getFullYear()} Linea Studio. Усі процедури проводяться кваліфікованими фахівцями.</span>
+          <span>© {new Date().getFullYear()} Студія Косметлогії She. Усі процедури проводяться кваліфікованими фахівцями.</span>
           <button onClick={() => setPage('admin')} style={{ background: 'none', border: 'none', color: 'rgba(246,240,236,0.5)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Панель адміністратора</button>
         </Container>
       </div>
@@ -669,17 +789,47 @@ function BookingForm({ dark }) {
   const [form, setForm] = useState({ firstName: '', lastName: '', service: '', date: null, time: '', phone: '' });
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [sending, setSending] = useState(false);
 
   const update = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
+    
+    // Проверка заполнения полей (оставляем вашу оригинальную валидацию)
     if (!form.firstName.trim() || !form.lastName.trim() || !form.service || !form.phone.trim() || !form.date || !form.time) {
       setError('Заповніть ім’я, прізвище, послугу, бажані дату і час, а також телефон.');
       return;
     }
     setError('');
-    setSent(true);
+    
+    setSending(true);
+
+    const dateLabelForSend = form.date 
+      ? form.date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' }) 
+      : 'Не вказано';
+
+    // Формируем сообщение для Telegram
+    const message = `
+<b>✨ НОВА ЗАЯВКА НА ЗАПИС!</b>
+
+<b>Клієнт:</b> ${form.firstName.trim()} ${form.lastName.trim()}
+<b>Телефон:</b> ${form.phone.trim()}
+<b>Послуга:</b> ${form.service}
+<b>Дата:</b> ${dateLabelForSend}
+<b>Час:</b> ${form.time}
+    `;
+
+    // Отправляем сообщение в Telegram
+    const ok = await sendTelegramMessage(message);
+
+    setSending(false);
+
+    if (ok) {
+      setSent(true);
+    } else {
+      setError('Не вдалося надіслати заявку — перевірте інтернет-з’єднання та спробуйте ще раз.');
+    }
   };
 
   const labelColor = dark ? 'rgba(246,240,236,0.7)' : 'var(--ink-soft)';
@@ -736,8 +886,8 @@ function BookingForm({ dark }) {
         <input className="ls-input" placeholder="+38 (0__) ___-__-__" value={form.phone} onChange={update('phone')} />
       </div>
       {error && <p style={{ fontSize: 13, color: 'var(--clay-dark)', marginBottom: 16 }}>{error}</p>}
-      <button type="submit" className="ls-btn ls-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-        Надіслати заявку <Send size={15} />
+      <button type="submit" disabled={sending} className="ls-btn ls-btn-primary" style={{ width: '100%', justifyContent: 'center', opacity: sending ? 0.7 : 1, cursor: sending ? 'wait' : 'pointer' }}>
+        {sending ? 'Надсилаємо…' : <>Надіслати заявку <Send size={15} /></>}
       </button>
       <p style={{ fontSize: 12, color: labelColor, marginTop: 12 }}>
         Це заявка на зв’язок, а не підтверджений запис — точну дату та час узгодить косметолог.
@@ -826,7 +976,7 @@ function Hero({ setPage }) {
             </div>
             <div style={{ position: 'absolute', bottom: -22, left: -22, background: '#F6F0EC', color: 'var(--ink)', padding: '16px 20px', borderRadius: 2, maxWidth: 220, boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
               <p className="f-mono" style={{ fontSize: 11, color: 'var(--sage)', marginBottom: 4 }}>ДІАГНОСТИКА</p>
-              <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Кожен протокол починається з розбору стану шкіри</p>
+              <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Кожна процедура починається з розбору стану шкіри</p>
             </div>
           </div>
         </div>
@@ -837,9 +987,8 @@ function Hero({ setPage }) {
 
 function StatRow() {
   const stats = [
-    { n: '8 років', l: 'практики студії' },
-    { n: '3 200+', l: 'проведених процедур' },
-    { n: '12', l: 'протоколів догляду' },
+    { n: '14 років', l: 'практики студії' },
+    { n: '24000+', l: 'проведених процедур' },
     { n: '4.9', l: 'середня оцінка клієнтів' },
   ];
   return (
@@ -864,7 +1013,7 @@ function ServicesTeaser({ setPage }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
           <div>
             <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Що ми робимо</p>
-            <h2 className="f-display" style={{ fontSize: 'clamp(24px, 3.5vw, 32px)' }}>Три напрямки догляду</h2>
+            <h2 className="f-display" style={{ fontSize: 'clamp(24px, 3.5vw, 32px)' }}>Напрямки догляду</h2>
           </div>
           <button className="ls-btn ls-btn-outline" onClick={() => setPage('services')}>Усі послуги та ціни <ChevronRight size={15} /></button>
         </div>
@@ -949,7 +1098,7 @@ function ServicesPage() {
       <Reveal>
         <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Прайс-лист</p>
         <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: 16 }}>Послуги та ціни</h1>
-        <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 48 }}>Підсумкова вартість та протокол уточнюються після діагностики шкіри на первинній консультації — ціни нижче дійсні для однієї процедури.</p>
+        <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 48 }}>Підсумкова вартість та процедура уточнюються після діагностики шкіри на первинній консультації — ціни нижче дійсні для однієї процедури.</p>
       </Reveal>
       {data.serviceGroups.map((g) => (
         <Reveal key={g.title}>
@@ -984,7 +1133,7 @@ function PortfolioPage() {
         <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Результати</p>
         <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: 16 }}>Портфоліо</h1>
         <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 16 }}>Потягніть за розділювач, щоб порівняти стан шкіри до та після курсу процедур.</p>
-        <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)', marginBottom: 40 }}>* завантажте реальні фото через панель адміністратора або використовуйте заглушки</p>
+        <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)', marginBottom: 40 }}></p>
       </Reveal>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 32 }}>
         {data.cases.map((c, i) => (
@@ -994,15 +1143,89 @@ function PortfolioPage() {
     </Container>
   );
 }
+function ReviewSubmitForm() {
+  const { data, submitPendingReview } = useSiteData();
+  const serviceNames = data.serviceGroups.flatMap(g => g.items.map(i => i.name));
+  const [form, setForm] = useState({ name: '', service: '', rating: 5, text: '' });
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+  const [sending, setSending] = useState(false);
 
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.service || !form.text.trim()) {
+      setError('Заповніть ім’я, послугу і текст відгуку.');
+      return;
+    }
+    setError('');
+    setSending(true);
+    try {
+      await submitPendingReview(form);
+      setSent(true);
+    } catch (err) {
+      setError('Не вдалося надіслати відгук. Спробуйте ще раз трохи пізніше.');
+    }
+    setSending(false);
+  };
+
+  if (sent) {
+    return (
+      <div className="ls-card" style={{ padding: 24, marginBottom: 32 }}>
+        <p className="f-display" style={{ fontSize: 18, marginBottom: 8 }}>Дякуємо за відгук!</p>
+        <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Він з’явиться на сайті протягом доби — щойно його перевірить адміністратор.</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="ls-card" style={{ padding: 24, marginBottom: 32 }}>
+      <div className="ls-admin-grid-2" style={{ marginBottom: 12 }}>
+        <div>
+          <label className="ls-label">Ваше ім’я</label>
+          <input className="ls-input" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Анна" />
+        </div>
+        <div>
+          <label className="ls-label">Послуга</label>
+          <select className="ls-input" value={form.service} onChange={(e) => setForm(f => ({ ...f, service: e.target.value }))}>
+            <option value="">Оберіть послугу</option>
+            {serviceNames.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+      </div>
+      <div style={{ marginBottom: 12 }}>
+        <label className="ls-label">Оцінка</label>
+        <select className="ls-input" value={form.rating} onChange={(e) => setForm(f => ({ ...f, rating: Number(e.target.value) }))}>
+          {[5,4,3,2,1].map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <label className="ls-label">Текст відгуку</label>
+        <textarea className="ls-input" rows={4} value={form.text} onChange={(e) => setForm(f => ({ ...f, text: e.target.value }))} />
+      </div>
+      {error && <p style={{ fontSize: 13, color: 'var(--clay-dark)', marginBottom: 12 }}>{error}</p>}
+      <button type="submit" disabled={sending} className="ls-btn ls-btn-primary" style={{ opacity: sending ? 0.7 : 1 }}>
+        {sending ? 'Надсилаємо…' : 'Надіслати відгук'}
+      </button>
+    </form>
+  );
+}
 function ReviewsPage() {
   const { data } = useSiteData();
+  const [showForm, setShowForm] = useState(false);
   return (
     <Container style={{ padding: 'clamp(32px, 5vw, 64px) clamp(16px, 4vw, 24px) clamp(48px, 8vw, 96px)' }}>
       <Reveal>
-        <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Думки клієнтів</p>
-        <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: 40 }}>Відгуки</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 40 }}>
+          <div>
+            <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Думки клієнтів</p>
+            <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4vw, 40px)' }}>Відгуки</h1>
+          </div>
+          <button className="ls-btn ls-btn-outline" onClick={() => setShowForm(s => !s)}>
+            {showForm ? 'Сховати форму' : 'Залишити відгук'}
+          </button>
+        </div>
       </Reveal>
+      {showForm && <ReviewSubmitForm />}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 20 }}>
         {data.reviews.map((r, i) => (
           <Reveal key={r.name} delay={i * 0.06}>
@@ -1076,7 +1299,7 @@ function AdminGate({ onUnlock }) {
           {error && <p style={{ fontSize: 13, color: 'var(--clay-dark)', marginBottom: 12 }}>{error}</p>}
           <button className="ls-btn ls-btn-primary" style={{ width: '100%', justifyContent: 'center' }} type="submit">Увійти</button>
         </form>
-        <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 16 }}>демо-код: {ADMIN_CODE}</p>
+        <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 16 }}></p>
       </div>
     </Container>
   );
@@ -1125,12 +1348,27 @@ function AdminPage() {
     setTimeout(() => setSavedMsg(''), 3000);
   };
 
+  const pendingCount = (data.pendingReviews || []).length;
   const tabs = [
     { id: 'services', label: 'Послуги', icon: <ListChecks size={16} /> },
     { id: 'portfolio', label: 'Портфоліо', icon: <ImageIcon size={16} /> },
     { id: 'reviews', label: 'Відгуки', icon: <MessageSquare size={16} /> },
+    { id: 'moderation', label: `Модерація${pendingCount ? ` (${pendingCount})` : ''}`, icon: <Bell size={16} /> },
     { id: 'settings', label: 'Налаштування', icon: <SettingsIcon size={16} /> },
   ];
+  const approveReview = async (review) => {
+    const updated = {
+      ...data,
+      reviews: [...data.reviews, { name: review.name, service: review.service, rating: review.rating, text: review.text }],
+      pendingReviews: (data.pendingReviews || []).filter(r => r.id !== review.id),
+    };
+    await persist(updated);
+  };
+
+  const rejectReview = async (review) => {
+    const updated = { ...data, pendingReviews: (data.pendingReviews || []).filter(r => r.id !== review.id) };
+    await persist(updated);
+  };
 
   return (
     <Container style={{ padding: 'clamp(32px, 5vw, 48px) clamp(16px, 4vw, 24px) clamp(48px, 8vw, 96px)' }}>
@@ -1215,7 +1453,7 @@ function AdminPage() {
               <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 6 }}>Якщо поле з фото порожнє — використовується заглушка-градієнт.</p>
             </AdminSection>
           ))}
-          <button className="ls-btn ls-btn-outline" onClick={() => setDraft(d => ({ ...d, cases: [...d.cases, { title: 'Новий кейс', tag: '', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#C9B8A6,#A4917E)', after: 'linear-gradient(135deg,#F5E6D6,#FFF8EE)' }] }))}><Plus size={15} /> Додати кейс</button>
+          <button className="ls-btn ls-btn-outline" onClick={() => setDraft(d => ({ ...d, cases: [...d.cases, { title: 'Новий кейс', tag: '', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#C9B8A6,#A4917E)', after: 'linear-gradient(135deg,#F5E6D6,#FFF8EE)' }] }))}><Plus size={15} /> Додати категорію</button>
         </div>
       )}
 
@@ -1230,7 +1468,13 @@ function AdminPage() {
             >
               <div className="ls-admin-grid-2">
                 <AdminField label="Ім’я" value={r.name} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], name: e.target.value }; return { ...d, reviews: rv }; })} />
-                <AdminField label="Послуга" value={r.service} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], service: e.target.value }; return { ...d, reviews: rv }; })} />
+                <div>
+                  <label className="ls-label">Послуга</label>
+                  <select className="ls-input" value={r.service} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], service: e.target.value }; return { ...d, reviews: rv }; })}>
+                    <option value="">Оберіть послугу</option>
+                    {draft.serviceGroups.flatMap(g => g.items.map(i => i.name)).map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
               </div>
               <div style={{ marginBottom: 10 }}>
                 <label className="ls-label">Оцінка</label>
@@ -1245,6 +1489,34 @@ function AdminPage() {
           <button className="ls-btn ls-btn-outline" onClick={() => setDraft(d => ({ ...d, reviews: [...d.reviews, { name: '', service: '', rating: 5, text: '' }] }))}><Plus size={15} /> Додати відгук</button>
         </div>
       )}
+      {tab === 'moderation' && (
+        <div>
+          {(data.pendingReviews || []).length === 0 && (
+            <p style={{ fontSize: 14, color: 'var(--ink-faint)' }}>Немає відгуків, що очікують модерації.</p>
+          )}
+          {(data.pendingReviews || []).map((r) => (
+            <AdminSection
+              key={r.id}
+              title={r.name || 'Без імені'}
+              icon={<MessageSquare size={16} color="var(--sage)" />}
+              actions={
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button className="ls-btn ls-btn-primary ls-btn-sm" onClick={() => approveReview(r)}><Check size={14} /> Підтвердити</button>
+                  <button className="ls-btn-danger" onClick={() => rejectReview(r)}><X size={15} /></button>
+                </div>
+              }
+            >
+              <div style={{ display: 'flex', gap: 3, marginBottom: 10 }}>
+                {Array.from({ length: 5 }).map((_, si) => (
+                  <Star key={si} size={14} fill={si < r.rating ? '#C97B6D' : 'none'} color={si < r.rating ? '#C97B6D' : 'var(--line)'} />
+                ))}
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: 8 }}>{r.text}</p>
+              <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)' }}>{r.service} · {new Date(r.createdAt).toLocaleString('uk-UA')}</p>
+            </AdminSection>
+          ))}
+        </div>
+      )}
 
       {tab === 'settings' && (
         <AdminSection title="Тексти та контакти" icon={<SettingsIcon size={16} color="var(--sage)" />}>
@@ -1257,30 +1529,87 @@ function AdminPage() {
           <AdminField label="Телефон" value={draft.settings.phone} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, phone: e.target.value } }))} />
           <AdminField label="Адреса" value={draft.settings.address} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, address: e.target.value } }))} />
           <AdminField label="Години роботи" value={draft.settings.hours} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, hours: e.target.value } }))} />
+          <AdminField label="Instagram (посилання)" value={draft.settings.instagramUrl} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, instagramUrl: e.target.value } }))} />
+          <AdminField label="Telegram (посилання)" value={draft.settings.telegramUrl} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, telegramUrl: e.target.value } }))} />
+          <AdminField label="WhatsApp (посилання wa.me/...)" value={draft.settings.whatsappUrl} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, whatsappUrl: e.target.value } }))} />
+          <AdminField label="Viber (посилання)" value={draft.settings.viberUrl} onChange={(e) => setDraft(d => ({ ...d, settings: { ...d.settings, viberUrl: e.target.value } }))} />
         </AdminSection>
+      )}
+
+      {tab === 'settings' && (
+        <div className="ls-card" style={{ padding: 20, background: 'var(--surface-soft)' }}>
+          <p style={{ fontSize: 13, marginBottom: 6 }}>
+            <strong>Спільне сховище (Supabase):</strong> {SUPABASE_URL ? 'підключено ✓' : 'не підключено — зміни бачите поки що лише ви, налаштуйте перед запуском (див. інструкцію в чаті)'}
+          </p>
+          <p style={{ fontSize: 13 }}>
+            <strong>Пошта для заявок (Formspree):</strong> {FORMSPREE_ENDPOINT ? 'підключено ✓' : 'не підключено — заявки поки нікуди не надсилаються (див. інструкцію в чаті)'}
+          </p>
+        </div>
       )}
     </Container>
   );
 }
 
+/*const PAGE_IDS = ['home', 'services', 'portfolio', 'reviews', 'contacts', 'admin'];
+
+function pathForPage(id) { return id === 'home' ? '/' : `/${id}`; }
+function pageForPath(pathname) {
+  const clean = (pathname || '/').replace(/\/+$/, '') || '/';
+  const id = clean === '/' ? 'home' : clean.slice(1);
+  return PAGE_IDS.includes(id) ? id : 'home';
+}
+*/
+const PAGE_IDS = ['home', 'services', 'portfolio', 'reviews', 'contacts', 'admin'];
+
+// BASE_URL приходит от Vite (значение из base: '/cosmetolog/' в vite.config.js)
+const BASE_PATH = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+
+function pathForPage(id) {
+  const suffix = id === 'home' ? '' : `/${id}`;
+  return `${BASE_PATH}${suffix}` || '/';
+}
+function pageForPath(pathname) {
+  let clean = pathname || '/';
+  if (BASE_PATH && clean.startsWith(BASE_PATH)) clean = clean.slice(BASE_PATH.length);
+  clean = clean.replace(/\/+$/, '') || '/';
+  const id = clean === '/' ? 'home' : clean.replace(/^\//, '');
+  return PAGE_IDS.includes(id) ? id : 'home';
+}
 export default function App() {
-  const [page, setPage] = useState('home');
+  const [page, setPageState] = useState(() => (typeof window !== 'undefined' ? pageForPath(window.location.pathname) : 'home'));
   const [data, setData] = useState(DEFAULT_DATA);
   const [ready, setReady] = useState(false);
+
+  // Справжня маршрутизація на history API: кнопка "назад" у браузері,
+  // свайп назад на мобільних та оновлення сторінки лишають на тій самій
+  // сторінці (за умови, що хостинг віддає index.html на будь-який шлях —
+  // це треба один раз налаштувати на боці хостингу, це не питання коду).
+  const navigate = useCallback((id, opts = {}) => {
+    if (!PAGE_IDS.includes(id)) id = 'home';
+    setPageState(id);
+    const path = pathForPage(id);
+    if (typeof window !== 'undefined' && window.location.pathname !== path) {
+      if (opts.replace) window.history.replaceState({ page: id }, '', path);
+      else window.history.pushState({ page: id }, '', path);
+    }
+  }, []);
+
+  useEffect(() => {
+    const onPop = () => setPageState(pageForPath(window.location.pathname));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        if (window.storage && window.storage.get) {
-          const res = await window.storage.get('site-data', true);
-          if (res && res.value && !cancelled) {
-            const parsed = JSON.parse(res.value);
-            setData(d => ({ ...d, ...parsed, settings: { ...d.settings, ...parsed.settings } }));
-          }
+        const parsed = await remoteGetSiteData();
+        if (parsed && !cancelled) {
+          setData(d => ({ ...d, ...parsed, settings: { ...d.settings, ...parsed.settings } }));
         }
       } catch (e) {
-        /* no saved data yet */
+        /* сховище ще порожнє або недоступне — лишаємось на дефолтних даних */
       }
       if (!cancelled) setReady(true);
     })();
@@ -1289,18 +1618,50 @@ export default function App() {
 
   const persist = async (newData) => {
     setData(newData);
-    try { 
-      if (window.storage && window.storage.set) {
-        await window.storage.set('site-data', JSON.stringify(newData), true); 
-      }
-    }
+    try { await remoteSetSiteData(newData); }
     catch (e) { console.error('storage error', e); }
   };
+  const submitPendingReview = async (review) => {
+    let latest = data;
+    try {
+      const fresh = await remoteGetSiteData();
+      if (fresh) latest = { ...data, ...fresh, settings: { ...data.settings, ...fresh.settings } };
+    } catch (e) { /* если не удалось — работаем с тем, что уже в стейте */ }
 
+    const newReview = {
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
+      name: review.name,
+      service: review.service,
+      rating: review.rating,
+      text: review.text,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = { ...latest, pendingReviews: [...(latest.pendingReviews || []), newReview] };
+    await persist(updated);
+
+    // Формуємо красивий текст для Telegram
+    const stars = '⭐'.repeat(review.rating);
+    const message = `
+    <b>💬 НОВИЙ ВІДГУК НА МОДЕРАЦІЮ!</b>
+
+    <b>Ім'я:</b> ${review.name}
+    <b>Послуга:</b> ${review.service}
+    <b>Оцінка:</b> ${stars} (${review.rating}/5)
+    <b>Текст відгуку:</b>
+    ${review.text}
+    `;
+
+    // Відправляємо в Telegram (помилка не блокує збереження відгуку)
+    try {
+      await sendTelegramMessage(message);
+    } catch (e) {
+      /* відгук уже збережено в базі — сповіщення другорядне */
+    }
+  };
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [page]);
 
   const pages = {
-    home: <HomePage setPage={setPage} />,
+    home: <HomePage setPage={navigate} />,
     services: <ServicesPage />,
     portfolio: <PortfolioPage />,
     reviews: <ReviewsPage />,
@@ -1313,12 +1674,12 @@ export default function App() {
   }
 
   return (
-    <SiteDataContext.Provider value={{ data, persist }}>
+    <SiteDataContext.Provider value={{ data, persist, submitPendingReview}}>
       <div className="ls-root">
         <GlobalStyle />
-        <Header page={page} setPage={setPage} />
+        <Header page={page} setPage={navigate} />
         {pages[page]}
-        <Footer setPage={setPage} />
+        <Footer setPage={navigate} />
       </div>
     </SiteDataContext.Provider>
   );

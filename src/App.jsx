@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback, createContext, useContext } from 'react';
 import {
   Menu, X, ArrowUpRight, Star, MapPin, Phone, Clock,
-  Camera, MessageCircle, Check, ChevronRight, ChevronLeft, Send,
+  Camera, Check, ChevronRight, ChevronLeft, Send,
   Plus, Trash2, Lock, Settings as SettingsIcon, Image as ImageIcon,
-  ListChecks, MessageSquare, RotateCcw, Upload, Bell
+  ListChecks, MessageSquare, RotateCcw, Upload, Bell, ToggleLeft, ToggleRight
 } from 'lucide-react';
+import heroImage from './assets/heroImage.jpg';
 
 const NAV = [
   { id: 'home', label: 'Головна' },
@@ -19,14 +20,13 @@ const WEEKDAYS_UA = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
 const TIME_SLOTS = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
 const ADMIN_CODE = 'L_Cosmetolog2012';
 
-
 const SUPABASE_URL = 'https://nkdgittctxmvbpwpskzv.supabase.co';    
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rZGdpdHRjdHhtdmJwd3Bza3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwNTIwMTEsImV4cCI6MjEwMDYyODAxMX0.Lpg6Kaf11_b0-4c0CmapEtTc_B1jARB014A_YjOAo_U';  // публічний anon key з налаштувань проєкту
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rZGdpdHRjdHhtdmJwd3Bza3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwNTIwMTEsImV4cCI6MjEwMDYyODAxMX0.Lpg6Kaf11_b0-4c0CmapEtTc_B1jARB014A_YjOAo_U';
 
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvzedgbk'; 
 
 const TELEGRAM_BOT_TOKEN = '8733289642:AAH3yI5RVU435qPUng14_FxgMDtE54rEHxk'; 
-const TELEGRAM_CHAT_ID = '5229852402';
+const TELEGRAM_CHAT_ID = '478064270';
 
 async function sendTelegramMessage(text) {
   try {
@@ -38,12 +38,12 @@ async function sendTelegramMessage(text) {
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
         text: text,
-        parse_mode: 'HTML', // Позволяет использовать жирный шрифт <b></b> и переносы строк
+        parse_mode: 'HTML',
       }),
     });
 
     if (!response.ok) {
-      throw new Error('Ошибка при отправке в Telegram');
+      throw new Error('Помилка при відправці в Telegram');
     }
     return true;
   } catch (error) {
@@ -96,7 +96,7 @@ async function remoteSetSiteData(data) {
 const DEFAULT_DATA = {
   settings: {
     heroEyebrow: 'Студія косметології She· Харків',
-    heroTitle: 'Догляд за шкірою, вибудований як протокол',
+    heroTitle: 'Твоя ідеальна шкіра без зайвих рухів',
     heroSubtitle: 'Діагностика шкіри, персональний план процедур та супровід косметолога на кожному етапі — від першої чистки до курсу ін’єкційної корекції.',
     phone: '+38 (067) 723-96-41',
     address: 'м. Харків, вул. Трінклера, 2',
@@ -137,10 +137,10 @@ const DEFAULT_DATA = {
     },
   ],
   cases: [
-    { title: 'Комбінована чистка обличчя', tag: 'Догляд за обличчям', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#C9B8A6,#A4917E)', after: 'linear-gradient(135deg,#F5E6D6,#FFF8EE)' },
-    { title: 'RF-ліфтинг, курс 5 процедур', tag: 'Апаратна косметологія', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#BCAC98,#8E8272)', after: 'linear-gradient(135deg,#F1E0CB,#FBEEDD)' },
-    { title: 'Біоревіталізація', tag: 'Ін’єкційна косметологія', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#C6B6A4,#9C8C79)', after: 'linear-gradient(135deg,#F5EADD,#FDF7EC)' },
-    { title: 'Контурна пластика губ', tag: 'Ін’єкційна косметологія', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#D2B7AC,#AD897C)', after: 'linear-gradient(135deg,#F1D9CE,#FBEAE1)' },
+    { type: 'before_after', title: 'Комбінована чистка обличчя', tag: 'Догляд за обличчям', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#C9B8A6,#A4917E)', after: 'linear-gradient(135deg,#F5E6D6,#FFF8EE)' },
+    { type: 'before_after', title: 'RF-ліфтинг, курс 5 процедур', tag: 'Апаратна косметологія', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#BCAC98,#8E8272)', after: 'linear-gradient(135deg,#F1E0CB,#FBEEDD)' },
+    { type: 'single', title: 'Біоревіталізація шкіри', tag: 'Ін’єкційна косметологія', singleImg: '' },
+    { type: 'before_after', title: 'Контурна пластика губ', tag: 'Ін’єкційна косметологія', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#D2B7AC,#AD897C)', after: 'linear-gradient(135deg,#F1D9CE,#FBEAE1)' },
   ],
   reviews: [
     { name: 'Анна К.', service: 'Біоревіталізація', rating: 5, text: 'Шкіра стала помітно щільнішою вже після другої процедури. Косметолог детально пояснила та підібрала домашній догляд.' },
@@ -229,6 +229,16 @@ function GlobalStyle() {
       .ls-btn-sm { padding: 8px 14px; font-size: 13px; }
       .ls-btn-danger { background: transparent; color: var(--clay-dark); border-color: transparent; padding: 6px 10px; cursor: pointer; }
       .ls-btn-danger:hover { background: rgba(201,123,109,0.12); }
+
+      .ls-phone-link {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.15s ease;
+      }
+      .ls-phone-link:hover {
+        color: var(--sage);
+        text-decoration: underline;
+      }
 
       .ls-card {
         background: var(--surface);
@@ -381,8 +391,12 @@ function GlobalStyle() {
         align-items: center;
         margin-bottom: 8px;
       }
-      /*
-      /* Медіа-запити для високої чутливості екранів */
+      @media (max-width: 1100px) {
+        .ls-hide-mobile {
+        display: none !important;
+        }
+      }
+      /* Медіа-запити для чутливості екранів */
       @media (max-width: 1024px) {
         .ls-hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
         .ls-contacts-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
@@ -410,96 +424,6 @@ function GlobalStyle() {
 
       @media (min-width: 1440px) {
         .ls-container { max-width: 1280px !important; }
-      }
-      */
-      /* --- Ultra-wide & Desktop Large --- */
-      @media (min-width: 1920px) {
-        /* Стили для 4K и очень широких экранов */
-      }
-
-      @media (min-width: 1600px) and (max-width: 1919px) {
-        /* Стили для больших мониторов */
-      }
-
-      @media (min-width: 1440px) and (max-width: 1599px) {
-        /* Стили для стандартных desktop (включая MacBook 15" / 16") */
-      }
-
-      @media (min-width: 1280px) and (max-width: 1439px) {
-        /* Стили для ноутбуков 13"-14" */
-      }
-
-      @media (min-width: 1024px) and (max-width: 1279px) {
-        /* Небольшие ноутбуки и горизонтальные планшеты */
-      }
-
-      /* --- Tablets & Medium Screens --- */
-      @media (min-width: 992px) and (max-width: 1023px) {
-        /* Переходная зона между десктопом и планшетом */
-      }
-
-      @media (min-width: 768px) and (max-width: 991px) {
-        /* Планшеты (альбомная ориентация) */
-      }
-
-      @media (max-width: 767px) {
-        /* Планшеты (книжная ориентация) и мобильные */
-      }
-
-      /* --- Mobile Devices --- */
-      @media (min-width: 576px) and (max-width: 766px) {
-        /* Большие смартфоны в горизонтальном режиме */
-      }
-
-      @media (min-width: 480px) and (max-width: 575px) {
-        /* Средние смартфоны */
-      }
-
-      @media (min-width: 375px) and (max-width: 479px) {
-        /* Стандартные смартфоны (iPhone X/11/12/13/14/15) */
-      }
-
-      @media (max-width: 374px) {
-        /* Компактные смартфоны (iPhone SE, старые модели) */
-      }
-
-      @media (max-width: 320px) {
-        /* Ультрамаленькие экраны */
-      }
-
-      /* --- Orientation & Hover --- */
-      @media (orientation: landscape) {
-        /* Альбомная ориентация */
-      }
-
-      @media (orientation: portrait) {
-        /* Книжная ориентация */
-      }
-
-      @media (hover: hover) and (pointer: fine) {
-        /* Устройства с мышкой (поддержка :hover эффектов) */
-      }
-
-      @media (hover: none) and (pointer: coarse) {
-        /* Сенсорные экраны (без мышки, тач-устройства) */
-      }
-
-      /* --- Display Densities (Retina) --- */
-      @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-        /* Экраны с высокой плотностью пикселей (Retina) */
-      }
-
-      /* --- System Themes & Accessibility --- */
-      @media (prefers-color-scheme: dark) {
-        /* Темная тема ОС */
-      }
-
-      @media (prefers-color-scheme: light) {
-        /* Светлая тема ОС */
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        /* Для пользователей, отключивших анимации в системе */
       }
     `}</style>
   );
@@ -551,8 +475,8 @@ function ScanDivider({ label }) {
 function Logo({ onClick, dark }) {
   return (
     <div onClick={onClick} style={{ cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6 }}>
-      <span className="f-display" style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 600, letterSpacing: '0.02em', color: dark ? '#fff' : 'var(--ink)' }}>Студія Косметології She</span>
-      <span className="f-mono" style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.6)' : 'var(--sage)' }}>studio</span>
+    <span className="f-display" style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 600, letterSpacing: '0.02em', color: dark ? '#fff' : 'var(--ink)' }}>Студія Косметології She</span>
+    <span className="f-mono" style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.6)' : 'var(--sage)' }}>studio</span>
     </div>
   );
 }
@@ -578,7 +502,7 @@ function ImageUploader({ value, onChange, label }) {
         <input 
           className="ls-input" 
           placeholder="https://... або завантажте фото" 
-          value={value} 
+          value={value || ''} 
           onChange={(e) => onChange(e.target.value)} 
           style={{ flex: 1, minWidth: 180 }}
         />
@@ -624,7 +548,7 @@ function Header({ page, setPage }) {
   }, []);
   const go = (id) => { setPage(id); setOpen(false); };
   return (
-    <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(246,240,236,0.92)', backdropFilter: 'blur(6px)', borderBottom: '1px solid var(--line)', boxShadow: scrolled ? '0 6px 20px rgba(38,34,31,0.06)' : 'none', transition: 'box-shadow 0.25s ease' }}>
+    <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'rgba(246,240,236,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--line)', boxShadow: scrolled ? '0 6px 20px rgba(38,34,31,0.06)' : 'none', transition: 'box-shadow 0.25s ease' }}>
       <Container style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 'clamp(60px, 8vw, 76px)' }}>
         <Logo onClick={() => go('home')} />
         <nav className="ls-hide-mobile" style={{ display: 'flex', gap: 'clamp(16px, 2.5vw, 32px)', alignItems: 'center' }}>
@@ -677,6 +601,8 @@ function ViberGlyph() {
 
 function Footer({ setPage }) {
   const { data } = useSiteData();
+  const cleanPhone = data.settings.phone.replace(/[^0-9+]/g, '');
+
   return (
     <footer style={{ background: 'var(--sage-dark)', color: 'rgba(246,240,236,0.85)', marginTop: 'auto' }}>
       <Container style={{ padding: 'clamp(40px, 6vw, 56px) clamp(16px, 4vw, 24px) 32px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 32 }}>
@@ -694,7 +620,10 @@ function Footer({ setPage }) {
         </div>
         <div>
           <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.5)', marginBottom: 14 }}>Контакти</p>
-          <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}><Phone size={14} /> {data.settings.phone}</p>
+          <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
+            <Phone size={14} /> 
+            <a href={`tel:${cleanPhone}`} className="ls-phone-link">{data.settings.phone}</a>
+          </p>
           <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}><MapPin size={14} /> {data.settings.address}</p>
           <p style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'center' }}><Clock size={14} /> {data.settings.hours}</p>
         </div>
@@ -713,12 +642,11 @@ function Footer({ setPage }) {
               </a>
             ))}
           </div>
-          <p className="f-mono" style={{ fontSize: 10, color: 'rgba(246,240,236,0.4)', marginTop: 10 }}></p>
         </div>
       </Container>
       <div style={{ borderTop: '1px solid rgba(246,240,236,0.15)' }}>
         <Container style={{ padding: '18px 24px', fontSize: 12, color: 'rgba(246,240,236,0.5)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-          <span>© {new Date().getFullYear()} Студія Косметлогії She. Усі процедури проводяться кваліфікованими фахівцями.</span>
+          <span>© {new Date().getFullYear()} Студія Косметології She. Усі процедури проводяться кваліфікованими фахівцями.</span>
           <button onClick={() => setPage('admin')} style={{ background: 'none', border: 'none', color: 'rgba(246,240,236,0.5)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Панель адміністратора</button>
         </Container>
       </div>
@@ -788,33 +716,20 @@ function BookingForm({ dark }) {
   const submit = async (e) => {
     e.preventDefault();
     
-    // Проверка заполнения полей (оставляем вашу оригинальную валидацию)
     if (!form.firstName.trim() || !form.lastName.trim() || !form.service || !form.phone.trim() || !form.date || !form.time) {
       setError('Заповніть ім’я, прізвище, послугу, бажані дату і час, а також телефон.');
       return;
     }
     setError('');
-    
     setSending(true);
 
     const dateLabelForSend = form.date 
       ? form.date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' }) 
       : 'Не вказано';
 
-    // Формируем сообщение для Telegram
-    const message = `
-<b>✨ НОВА ЗАЯВКА НА ЗАПИС!</b>
+    const message = `<b>✨ НОВА ЗАЯВКА НА ЗАПИС!</b>\n\n<b>Клієнт:</b> ${form.firstName.trim()} ${form.lastName.trim()}\n<b>Телефон:</b> ${form.phone.trim()}\n<b>Послуга:</b> ${form.service}\n<b>Дата:</b> ${dateLabelForSend}\n<b>Час:</b> ${form.time}`;
 
-<b>Клієнт:</b> ${form.firstName.trim()} ${form.lastName.trim()}
-<b>Телефон:</b> ${form.phone.trim()}
-<b>Послуга:</b> ${form.service}
-<b>Дата:</b> ${dateLabelForSend}
-<b>Час:</b> ${form.time}
-    `;
-
-    // Отправляем сообщение в Telegram
     const ok = await sendTelegramMessage(message);
-
     setSending(false);
 
     if (ok) {
@@ -888,7 +803,7 @@ function BookingForm({ dark }) {
   );
 }
 
-function BeforeAfter({ item }) {
+function PortfolioCard({ item }) {
   const ref = useRef(null);
   const [pct, setPct] = useState(50);
   const dragging = useRef(false);
@@ -916,8 +831,27 @@ function BeforeAfter({ item }) {
     };
   }, [setFromClientX]);
 
-  const afterStyle = item.afterImg ? { backgroundImage: `url(${item.afterImg})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: item.after };
-  const beforeStyle = item.beforeImg ? { backgroundImage: `url(${item.beforeImg})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: item.before };
+  const isSingle = item.type === 'single';
+
+  if (isSingle) {
+    const singleStyle = item.singleImg ? { backgroundImage: `url(${item.singleImg})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(135deg,#C9B8A6,#F5E6D6)' };
+    return (
+      <div>
+        <div style={{ position: 'relative', height: 'clamp(220px, 35vw, 280px)', borderRadius: 2, overflow: 'hidden', ...singleStyle }}>
+          <div style={{ position: 'absolute', top: 14, right: 14, fontSize: 10 }} className="f-mono">
+            <span style={{ background: 'rgba(255,255,255,0.85)', padding: '3px 8px', borderRadius: 2, color: 'var(--sage-dark)' }}>РЕЗУЛЬТАТ</span>
+          </div>
+        </div>
+        <div style={{ marginTop: 14 }}>
+          <p className="ls-eyebrow" style={{ marginBottom: 4 }}>{item.tag}</p>
+          <p style={{ fontSize: 15, fontWeight: 500 }}>{item.title}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const afterStyle = item.afterImg ? { backgroundImage: `url(${item.afterImg})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: item.after || 'linear-gradient(135deg,#F5E6D6,#FFF8EE)' };
+  const beforeStyle = item.beforeImg ? { backgroundImage: `url(${item.beforeImg})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: item.before || 'linear-gradient(135deg,#C9B8A6,#A4917E)' };
 
   return (
     <div>
@@ -961,16 +895,25 @@ function Hero({ setPage }) {
               <button className="ls-btn ls-btn-ghost" onClick={() => setPage('services')}>Переглянути послуги</button>
             </div>
           </div>
-          <div className="ls-hide-mobile" style={{ position: 'relative', opacity: mounted ? 1 : 0, transform: mounted ? 'scale(1)' : 'scale(0.96)', transition: 'opacity 0.9s ease 0.15s, transform 0.9s ease 0.15s' }}>
-            <div style={{ position: 'relative', height: 340, borderRadius: 2, background: 'linear-gradient(155deg,#5C6E54,#3A4636 70%)', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(246,240,236,0.08) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
-              <div className="ls-scan" style={{ position: 'absolute', left: 24, right: 24, top: '50%', background: 'rgba(246,240,236,0.25)' }} />
-            </div>
-            <div style={{ position: 'absolute', bottom: -22, left: -22, background: '#acbf68', color: 'var(--ink)', padding: '16px 20px', borderRadius: 2, maxWidth: 220, boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
-              <p className="f-mono" style={{ fontSize: 11, color: 'var(--sage)', marginBottom: 4 }}>ДІАГНОСТИКА</p>
-              <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Кожна процедура починається з розбору стану шкіри</p>
-            </div>
+          <div  className="ls-hide-mobile" // <-- Цей клас сховає весь блок на мобільних/звужених екранах
+            style={{ 
+              position: 'relative', 
+              opacity: mounted ? 1 : 0, 
+              transform: mounted ? 'scale(1)' : 'scale(0.96)', 
+              transition: 'opacity 0.9s ease 0.15s, transform 0.9s ease 0.15s' 
+            }}>
+          <div style={{ position: 'relative', height: 340, borderRadius: 2, overflow: 'hidden' }}>
+            <img 
+              src={heroImage}
+              alt="Діагностика шкіри" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} 
+            />
           </div>
+          <div style={{ position: 'absolute', bottom: -22, left: -22, background: '#acbf68', color: 'var(--ink)', padding: '16px 20px', borderRadius: 2, maxWidth: 220, boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
+            <p className="f-mono" style={{ fontSize: 11, color: 'var(--sage)', marginBottom: 4 }}>ДІАГНОСТИКА</p>
+            <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Кожна процедура починається з розбору стану шкіри</p>
+          </div> 
+        </div>
         </div>
       </Container>
     </div>
@@ -1124,17 +1067,17 @@ function PortfolioPage() {
       <Reveal>
         <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Результати</p>
         <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: 16 }}>Портфоліо</h1>
-        <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 16 }}>Потягніть за розділювач, щоб порівняти стан шкіри до та після курсу процедур.</p>
-        <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)', marginBottom: 40 }}></p>
+        <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 40 }}>Наші роботи та результати процедур до і після.</p>
       </Reveal>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 32 }}>
         {data.cases.map((c, i) => (
-          <Reveal key={c.title} delay={i * 0.08}><BeforeAfter item={c} /></Reveal>
+          <Reveal key={i} delay={i * 0.08}><PortfolioCard item={c} /></Reveal>
         ))}
       </div>
     </Container>
   );
 }
+
 function ReviewSubmitForm() {
   const { data, submitPendingReview } = useSiteData();
   const serviceNames = data.serviceGroups.flatMap(g => g.items.map(i => i.name));
@@ -1201,6 +1144,7 @@ function ReviewSubmitForm() {
     </form>
   );
 }
+
 function ReviewsPage() {
   const { data } = useSiteData();
   const [showForm, setShowForm] = useState(false);
@@ -1240,6 +1184,8 @@ function ReviewsPage() {
 function ContactsPage() {
   const { data } = useSiteData();
   const s = data.settings;
+  const cleanPhone = s.phone.replace(/[^0-9+]/g, '');
+
   return (
     <Container style={{ padding: 'clamp(32px, 5vw, 64px) clamp(16px, 4vw, 24px) clamp(48px, 8vw, 96px)' }}>
       <Reveal>
@@ -1254,7 +1200,10 @@ function ContactsPage() {
           </div>
           <div style={{ marginBottom: 28 }}>
             <p className="ls-eyebrow" style={{ marginBottom: 8 }}>Телефон</p>
-            <p style={{ fontSize: 15, display: 'flex', gap: 10, alignItems: 'flex-start' }}><Phone size={16} style={{ marginTop: 3, flexShrink: 0 }} color="var(--sage)" /> {s.phone}</p>
+            <p style={{ fontSize: 15, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <Phone size={16} style={{ marginTop: 3, flexShrink: 0 }} color="var(--sage)" /> 
+              <a href={`tel:${cleanPhone}`} className="ls-phone-link">{s.phone}</a>
+            </p>
           </div>
           <div style={{ marginBottom: 28 }}>
             <p className="ls-eyebrow" style={{ marginBottom: 8 }}>Години роботи</p>
@@ -1291,7 +1240,6 @@ function AdminGate({ onUnlock }) {
           {error && <p style={{ fontSize: 13, color: 'var(--clay-dark)', marginBottom: 12 }}>{error}</p>}
           <button className="ls-btn ls-btn-primary" style={{ width: '100%', justifyContent: 'center' }} type="submit">Увійти</button>
         </form>
-        <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 16 }}></p>
       </div>
     </Container>
   );
@@ -1341,6 +1289,8 @@ function AdminPage() {
   };
 
   const pendingCount = (data.pendingReviews || []).length;
+  const categoryOptions = Array.from(new Set(draft.serviceGroups.map(g => g.title).filter(Boolean)));
+
   const tabs = [
     { id: 'services', label: 'Послуги', icon: <ListChecks size={16} /> },
     { id: 'portfolio', label: 'Портфоліо', icon: <ImageIcon size={16} /> },
@@ -1419,33 +1369,72 @@ function AdminPage() {
 
       {tab === 'portfolio' && (
         <div>
-          {draft.cases.map((c, ci) => (
-            <AdminSection
-              key={ci}
-              title={c.title || 'Без назви'}
-              icon={<ImageIcon size={16} color="var(--sage)" />}
-              actions={<button className="ls-btn-danger" onClick={() => setDraft(d => ({ ...d, cases: d.cases.filter((_, i) => i !== ci) }))}><Trash2 size={15} /></button>}
-            >
-              <div className="ls-admin-grid-2">
-                <AdminField label="Назва кейсу" value={c.title} onChange={(e) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], title: e.target.value }; return { ...d, cases: cs }; })} />
-                <AdminField label="Категорія" value={c.tag} onChange={(e) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], tag: e.target.value }; return { ...d, cases: cs }; })} />
-              </div>
-              <div className="ls-admin-grid-2">
-                <ImageUploader 
-                  label="Фото «до»" 
-                  value={c.beforeImg} 
-                  onChange={(val) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], beforeImg: val }; return { ...d, cases: cs }; })} 
-                />
-                <ImageUploader 
-                  label="Фото «після»" 
-                  value={c.afterImg} 
-                  onChange={(val) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], afterImg: val }; return { ...d, cases: cs }; })} 
-                />
-              </div>
-              <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 6 }}>Якщо поле з фото порожнє — використовується заглушка-градієнт.</p>
-            </AdminSection>
-          ))}
-          <button className="ls-btn ls-btn-outline" onClick={() => setDraft(d => ({ ...d, cases: [...d.cases, { title: 'Новий кейс', tag: '', beforeImg: '', afterImg: '', before: 'linear-gradient(135deg,#C9B8A6,#A4917E)', after: 'linear-gradient(135deg,#F5E6D6,#FFF8EE)' }] }))}><Plus size={15} /> Додати кейс</button>
+          {draft.cases.map((c, ci) => {
+            const isSingle = c.type === 'single';
+            return (
+              <AdminSection
+                key={ci}
+                title={c.title || 'Без назви'}
+                icon={<ImageIcon size={16} color="var(--sage)" />}
+                actions={<button className="ls-btn-danger" onClick={() => setDraft(d => ({ ...d, cases: d.cases.filter((_, i) => i !== ci) }))}><Trash2 size={15} /></button>}
+              >
+                <div style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <label className="ls-label" style={{ margin: 0 }}>Тип картки:</label>
+                  <button
+                    type="button"
+                    className="ls-btn ls-btn-outline ls-btn-sm"
+                    onClick={() => setDraft(d => {
+                      const cs = [...d.cases];
+                      cs[ci] = { ...cs[ci], type: isSingle ? 'before_after' : 'single' };
+                      return { ...d, cases: cs };
+                    })}
+                  >
+                    {isSingle ? <ToggleLeft size={16} color="var(--ink-soft)" /> : <ToggleRight size={16} color="var(--sage)" />}
+                    {isSingle ? 'Одне фото' : 'До / Після (слайдер)'}
+                  </button>
+                </div>
+
+                <div className="ls-admin-grid-2">
+                  <AdminField label="Назва кейсу" value={c.title} onChange={(e) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], title: e.target.value }; return { ...d, cases: cs }; })} />
+                  <div>
+                    <label className="ls-label">Категорія</label>
+                    <select
+                      className="ls-input"
+                      value={c.tag}
+                      onChange={(e) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], tag: e.target.value }; return { ...d, cases: cs }; })}
+                    >
+                      <option value="">Оберіть категорію</option>
+                      {categoryOptions.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                      {!categoryOptions.includes(c.tag) && c.tag && <option value={c.tag}>{c.tag}</option>}
+                    </select>
+                  </div>
+                </div>
+
+                {isSingle ? (
+                  <ImageUploader 
+                    label="Фото результату" 
+                    value={c.singleImg} 
+                    onChange={(val) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], singleImg: val }; return { ...d, cases: cs }; })} 
+                  />
+                ) : (
+                  <div className="ls-admin-grid-2">
+                    <ImageUploader 
+                      label="Фото «до»" 
+                      value={c.beforeImg} 
+                      onChange={(val) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], beforeImg: val }; return { ...d, cases: cs }; })} 
+                    />
+                    <ImageUploader 
+                      label="Фото «після»" 
+                      value={c.afterImg} 
+                      onChange={(val) => setDraft(d => { const cs = [...d.cases]; cs[ci] = { ...cs[ci], afterImg: val }; return { ...d, cases: cs }; })} 
+                    />
+                  </div>
+                )}
+                <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 6 }}>Якщо поле з фото порожнє — використовується естетична заглушка.</p>
+              </AdminSection>
+            );
+          })}
+          <button className="ls-btn ls-btn-outline" onClick={() => setDraft(d => ({ ...d, cases: [...d.cases, { type: 'before_after', title: 'Новий кейс', tag: categoryOptions[0] || '', beforeImg: '', afterImg: '', singleImg: '' }] }))}><Plus size={15} /> Додати кейс</button>
         </div>
       )}
 
@@ -1481,6 +1470,7 @@ function AdminPage() {
           <button className="ls-btn ls-btn-outline" onClick={() => setDraft(d => ({ ...d, reviews: [...d.reviews, { name: '', service: '', rating: 5, text: '' }] }))}><Plus size={15} /> Додати відгук</button>
         </div>
       )}
+
       {tab === 'moderation' && (
         <div>
           {(data.pendingReviews || []).length === 0 && (
@@ -1531,10 +1521,10 @@ function AdminPage() {
       {tab === 'settings' && (
         <div className="ls-card" style={{ padding: 20, background: 'var(--surface-soft)' }}>
           <p style={{ fontSize: 13, marginBottom: 6 }}>
-            <strong>Спільне сховище (Supabase):</strong> {SUPABASE_URL ? 'підключено ✓' : 'не підключено — зміни бачите поки що лише ви, налаштуйте перед запуском (див. інструкцію в чаті)'}
+            <strong>Спільне сховище (Supabase):</strong> {SUPABASE_URL ? 'підключено ✓' : 'не підключено — зміни бачите поки що лише ви, налаштуйте перед запуском'}
           </p>
           <p style={{ fontSize: 13 }}>
-            <strong>Пошта для заявок (Formspree):</strong> {FORMSPREE_ENDPOINT ? 'підключено ✓' : 'не підключено — заявки поки нікуди не надсилаються (див. інструкцію в чаті)'}
+            <strong>Пошта для заявок (Formspree):</strong> {FORMSPREE_ENDPOINT ? 'підключено ✓' : 'не підключено — заявки поки нікуди не надсилаються'}
           </p>
         </div>
       )}
@@ -1542,24 +1532,15 @@ function AdminPage() {
   );
 }
 
-/*const PAGE_IDS = ['home', 'services', 'portfolio', 'reviews', 'contacts', 'admin'];
-
-function pathForPage(id) { return id === 'home' ? '/' : `/${id}`; }
-function pageForPath(pathname) {
-  const clean = (pathname || '/').replace(/\/+$/, '') || '/';
-  const id = clean === '/' ? 'home' : clean.slice(1);
-  return PAGE_IDS.includes(id) ? id : 'home';
-}
-*/
 const PAGE_IDS = ['home', 'services', 'portfolio', 'reviews', 'contacts', 'admin'];
 
-// BASE_URL приходит от Vite (значение из base: '/cosmetolog/' в vite.config.js)
 const BASE_PATH = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 
 function pathForPage(id) {
   const suffix = id === 'home' ? '' : `/${id}`;
   return `${BASE_PATH}${suffix}` || '/';
 }
+
 function pageForPath(pathname) {
   let clean = pathname || '/';
   if (BASE_PATH && clean.startsWith(BASE_PATH)) clean = clean.slice(BASE_PATH.length);
@@ -1567,15 +1548,12 @@ function pageForPath(pathname) {
   const id = clean === '/' ? 'home' : clean.replace(/^\//, '');
   return PAGE_IDS.includes(id) ? id : 'home';
 }
+
 export default function App() {
   const [page, setPageState] = useState(() => (typeof window !== 'undefined' ? pageForPath(window.location.pathname) : 'home'));
   const [data, setData] = useState(DEFAULT_DATA);
   const [ready, setReady] = useState(false);
 
-  // Справжня маршрутизація на history API: кнопка "назад" у браузері,
-  // свайп назад на мобільних та оновлення сторінки лишають на тій самій
-  // сторінці (за умови, що хостинг віддає index.html на будь-який шлях —
-  // це треба один раз налаштувати на боці хостингу, це не питання коду).
   const navigate = useCallback((id, opts = {}) => {
     if (!PAGE_IDS.includes(id)) id = 'home';
     setPageState(id);
@@ -1601,7 +1579,7 @@ export default function App() {
           setData(d => ({ ...d, ...parsed, settings: { ...d.settings, ...parsed.settings } }));
         }
       } catch (e) {
-        /* сховище ще порожнє або недоступне — лишаємось на дефолтних даних */
+        /* сховище ще порожнє або недоступне */
       }
       if (!cancelled) setReady(true);
     })();
@@ -1613,12 +1591,13 @@ export default function App() {
     try { await remoteSetSiteData(newData); }
     catch (e) { console.error('storage error', e); }
   };
+
   const submitPendingReview = async (review) => {
     let latest = data;
     try {
       const fresh = await remoteGetSiteData();
       if (fresh) latest = { ...data, ...fresh, settings: { ...data.settings, ...fresh.settings } };
-    } catch (e) { /* если не удалось — работаем с тем, что уже в стейте */ }
+    } catch (e) { /* якщо не вдалося — використовуємо поточний стейт */ }
 
     const newReview = {
       id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
@@ -1631,25 +1610,16 @@ export default function App() {
     const updated = { ...latest, pendingReviews: [...(latest.pendingReviews || []), newReview] };
     await persist(updated);
 
-    // Формуємо красивий текст для Telegram
     const stars = '⭐'.repeat(review.rating);
-    const message = `
-    <b>💬 НОВИЙ ВІДГУК НА МОДЕРАЦІЮ!</b>
+    const message = `<b>💬 НОВИЙ ВІДГУК НА МОДЕРАЦІЮ!</b>\n\n<b>Ім'я:</b> ${review.name}\n<b>Послуга:</b> ${review.service}\n<b>Оцінка:</b> ${stars} (${review.rating}/5)\n<b>Текст відгуку:</b>\n${review.text}`;
 
-    <b>Ім'я:</b> ${review.name}
-    <b>Послуга:</b> ${review.service}
-    <b>Оцінка:</b> ${stars} (${review.rating}/5)
-    <b>Текст відгуку:</b>
-    ${review.text}
-    `;
-
-    // Відправляємо в Telegram (помилка не блокує збереження відгуку)
     try {
       await sendTelegramMessage(message);
     } catch (e) {
-      /* відгук уже збережено в базі — сповіщення другорядне */
+      /* сповіщення другорядне */
     }
   };
+
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [page]);
 
   const pages = {
@@ -1666,11 +1636,13 @@ export default function App() {
   }
 
   return (
-    <SiteDataContext.Provider value={{ data, persist, submitPendingReview}}>
+    <SiteDataContext.Provider value={{ data, persist, submitPendingReview }}>
       <div className="ls-root">
         <GlobalStyle />
         <Header page={page} setPage={navigate} />
-        {pages[page]}
+        <div style={{ paddingTop: 'clamp(60px, 8vw, 76px)' }}>
+          {pages[page]}
+        </div>
         <Footer setPage={navigate} />
       </div>
     </SiteDataContext.Provider>
