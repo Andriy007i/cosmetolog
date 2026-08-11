@@ -66,6 +66,9 @@ Error generating stack: `+e.message+`
           gap: 4px;
         }
       }
+      .ls-eyebrow::after, .ls-eyebrow::before {
+        content: none !important;
+      }
 
       .ls-root {
         --bg: #F1E8C7;
