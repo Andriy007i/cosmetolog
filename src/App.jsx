@@ -168,14 +168,14 @@ function GlobalStyle() {
       }
 
       .ls-root {
-        --bg: #F6F0EC;
-        --surface: #FFFFFF;
-        --surface-soft: #FBF6F1;
+        --bg: #F1E8C7;
+        --surface: #F1E8C7;
+        --surface-soft: #F1E8C7;
         --ink: #26221F;
         --ink-soft: #746B62;
         --ink-faint: #A79E92;
-        --sage: #4E5F47;
-        --sage-dark: #384533;
+        --sage: #9CA764;
+        --sage-dark: #7D8650;
         --clay: #C97B6D;
         --clay-dark: #A9584B;
         --taupe: #B7A78C;
@@ -548,7 +548,7 @@ function Header({ page, setPage }) {
   }, []);
   const go = (id) => { setPage(id); setOpen(false); };
   return (
-    <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'rgba(246,240,236,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--line)', boxShadow: scrolled ? '0 6px 20px rgba(38,34,31,0.06)' : 'none', transition: 'box-shadow 0.25s ease' }}>
+    <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'rgba(241,232,199,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--line)', boxShadow: scrolled ? '0 6px 20px rgba(38,34,31,0.06)' : 'none', transition: 'box-shadow 0.25s ease' }}>
       <Container style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 'clamp(60px, 8vw, 76px)' }}>
         <Logo onClick={() => go('home')} />
         <nav className="ls-hide-mobile" style={{ display: 'flex', gap: 'clamp(16px, 2.5vw, 32px)', alignItems: 'center' }}>
@@ -888,10 +888,10 @@ function Hero({ setPage }) {
         <div className="ls-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: 56, alignItems: 'center' }}>
           <div style={{ opacity: mounted ? 1 : 0, transform: mounted ? 'translateY(0)' : 'translateY(18px)', transition: 'opacity 0.8s ease, transform 0.8s ease' }}>
             <p className="ls-eyebrow" style={{ color: 'rgba(246,240,236,0.6)', marginBottom: 18 }}>{s.heroEyebrow}</p>
-            <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4.5vw, 56px)', lineHeight: 1.08, fontWeight: 500, marginBottom: 22 }}>{s.heroTitle}</h1>
+            <h1 className="f-display" style={{ fontSize: 'clamp(28px, 4.5vw, 56px)', lineHeight: 1.08, fontWeight: 500, marginBottom: 22, color: '#FFFFFF' }}>{s.heroTitle}</h1>
             <p style={{ fontSize: 'clamp(14px, 1.8vw, 16px)', color: 'rgba(246,240,236,0.75)', maxWidth: 460, marginBottom: 34 }}>{s.heroSubtitle}</p>
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <button className="ls-btn ls-btn-primary" style={{ background: '#F6F0EC', color: 'var(--sage-dark)' }} onClick={() => setPage('contacts')}>Залишити заявку <ArrowUpRight size={15} /></button>
+              <button className="ls-btn ls-btn-primary" style={{ background: '#F1E8C7', color: 'var(--sage-dark)' }} onClick={() => setPage('contacts')}>Залишити заявку <ArrowUpRight size={15} /></button>
               <button className="ls-btn ls-btn-ghost" onClick={() => setPage('services')}>Переглянути послуги</button>
             </div>
           </div>
@@ -909,10 +909,42 @@ function Hero({ setPage }) {
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} 
             />
           </div>
-          <div style={{ position: 'absolute', bottom: -22, left: -22, background: '#acbf68', color: 'var(--ink)', padding: '16px 20px', borderRadius: 2, maxWidth: 220, boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
-            <p className="f-mono" style={{ fontSize: 11, color: 'var(--sage)', marginBottom: 4 }}>ДІАГНОСТИКА</p>
-            <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Кожна процедура починається з розбору стану шкіри</p>
-          </div> 
+          <div 
+  style={{ 
+    position: 'absolute', 
+    bottom: -22, 
+    left: -22, 
+    background: 'rgba(25, 35, 25, 0.85)', // напівпрозорий темний фон, щоб білий текст і рамка виглядали контрастно
+    backdropFilter: 'blur(8px)',           // ефект розмиття фону під плашкою
+    padding: '16px 20px', 
+    borderRadius: 4, 
+    maxWidth: 220, 
+    border: '1.5px solid #FFFFFF',          // суцільна біла рамка
+    boxShadow: '0 10px 25px rgba(0,0,0,0.25)' 
+  }}
+>
+  <p 
+    className="f-mono" 
+    style={{ 
+      fontSize: 11, 
+      color: '#FFFFFF',                     // білий колір
+      marginBottom: 4, 
+      opacity: 0.9, 
+      letterSpacing: '0.05em' 
+    }}
+  >
+    ДІАГНОСТИКА
+  </p>
+  <p 
+    style={{ 
+      fontSize: 13, 
+      color: '#FFFFFF',                     // білий колір
+      lineHeight: 1.4 
+    }}
+  >
+    Кожна процедура починається з розбору стану шкіри
+  </p>
+</div>
         </div>
         </div>
       </Container>
@@ -1209,9 +1241,19 @@ function ContactsPage() {
             <p className="ls-eyebrow" style={{ marginBottom: 8 }}>Години роботи</p>
             <p style={{ fontSize: 15, display: 'flex', gap: 10, alignItems: 'flex-start' }}><Clock size={16} style={{ marginTop: 3, flexShrink: 0 }} color="var(--sage)" /> {s.hours}</p>
           </div>
-          <div style={{ height: 200, borderRadius: 2, background: 'var(--surface-soft)', border: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)' }}>карта проїзду</p>
+          <div style={{ height: 200, borderRadius: 2, overflow: 'hidden', border: '1px solid var(--line)' }}>
+          <iframe
+            src="https://www.google.com/maps?q=вул.+Трінклера,+2,+Харків&output=embed"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Карта проїзду"
+          ></iframe>
           </div>
+
         </Reveal>
         <Reveal delay={0.1}><BookingForm /></Reveal>
       </div>
