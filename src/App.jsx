@@ -646,7 +646,88 @@ function ImageUploader({ value, onChange, label }) {
     </div>
   );
 }
+const SPA_BUCKET = 'spa-media';
 
+function VideoUploader({ value, onChange }) {
+  const inputRef = useRef(null);
+  const [progress, setProgress] = useState(null);
+  const [error, setError] = useState('');
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      setError('Оберіть відеофайл (mp4, mov, webm).');
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      setError('Файл більший за 50 МБ. Стисніть відео або вставте посилання YouTube.');
+      return;
+    }
+    setError('');
+    setProgress(0);
+
+    const ext = (file.name.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const path = `video-${Date.now()}.${ext}`;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${SUPABASE_URL}/storage/v1/object/${SPA_BUCKET}/${path}`);
+    xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+    xhr.setRequestHeader('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
+    xhr.setRequestHeader('Content-Type', file.type);
+    xhr.setRequestHeader('x-upsert', 'true');
+    xhr.upload.onprogress = (ev) => {
+      if (ev.lengthComputable) setProgress(Math.round((ev.loaded / ev.total) * 100));
+    };
+    xhr.onload = () => {
+      setProgress(null);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onChange(`${SUPABASE_URL}/storage/v1/object/public/${SPA_BUCKET}/${path}`);
+      } else {
+        setError(`Помилка завантаження (${xhr.status}). Перевірте bucket і політики в Supabase.`);
+      }
+    };
+    xhr.onerror = () => {
+      setProgress(null);
+      setError('Не вдалося завантажити — перевірте інтернет-з’єднання.');
+    };
+    xhr.send(file);
+  };
+
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <label className="ls-label">Відео: посилання YouTube або завантажте файл</label>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <input
+          className="ls-input"
+          placeholder="https://youtube.com/... або завантажте файл"
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ flex: 1, minWidth: 180 }}
+        />
+        <input type="file" accept="video/*" ref={inputRef} style={{ display: 'none' }} onChange={handleFile} />
+        <button
+          type="button"
+          className="ls-btn ls-btn-outline ls-btn-sm"
+          disabled={progress !== null}
+          onClick={() => inputRef.current?.click()}
+          style={{ padding: '10px 12px' }}
+        >
+          <Upload size={14} /> {progress !== null ? `${progress}%` : 'Файл'}
+        </button>
+      </div>
+      {progress !== null && (
+        <div style={{ height: 4, background: 'var(--line)', marginTop: 8, borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{ width: `${progress}%`, height: '100%', background: 'var(--sage)', transition: 'width 0.2s' }} />
+        </div>
+      )}
+      {error && <p style={{ fontSize: 12, color: 'var(--clay-dark)', marginTop: 6 }}>{error}</p>}
+      {value && !youtubeId(value) && (
+        <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 6, wordBreak: 'break-all' }}>{value}</p>
+      )}
+    </div>
+  );
+}
 function Header({ page, setPage }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -1665,7 +1746,7 @@ function AdminPage() {
                 </div>
                 {c.type === 'video' ? (
                   <div>
-                    <AdminField label="Відео: посилання YouTube або файл .mp4 (напр. /spa/video1.mp4)" value={c.src || ''} onChange={(e) => setList('portfolio', i, { src: e.target.value })} />
+                    <VideoUploader value={c.src} onChange={(val) => setList('portfolio', i, { src: val })} />
                     <ImageUploader label="Обкладинка відео (необов’язково)" value={c.poster} onChange={(val) => setList('portfolio', i, { poster: val })} />
                   </div>
                 ) : (
