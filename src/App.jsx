@@ -521,6 +521,19 @@ function GlobalStyle() {
       @media (min-width: 1440px) {
         .ls-container { max-width: 1280px !important; }
       }
+      /* ===== SPA: примусово світлий текст ===== */
+      .ls-theme-spa { color: var(--ink); }
+      .ls-theme-spa :is(h1, h2, h3, h4, h5, h6) { color: var(--ink); }
+      :where(.ls-theme-spa) :is(p, span, li, label) { color: var(--ink); }
+      :where(.ls-theme-spa) button { color: var(--ink); }
+
+      .ls-slot { color: var(--ink); }
+      .ls-slot.selected { color: var(--on-accent); }
+      .ls-theme-spa .ls-day { color: var(--ink); }
+      .ls-theme-spa .ls-day.selected { color: var(--on-accent); }
+      .ls-theme-spa .ls-input,
+      .ls-theme-spa select,
+      .ls-theme-spa textarea { color: var(--ink); }
     `}</style>
   );
 }
@@ -1182,7 +1195,7 @@ function ServicesPage() {
                     <p style={{ fontSize: 'clamp(14px, 1.8vw, 15px)', marginBottom: 4 }}>{it.name}</p>
                     <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-faint)' }}>{it.time}</p>
                   </div>
-                  <p className="f-mono" style={{ fontSize: 'clamp(14px, 2vw, 15px)', whiteSpace: 'nowrap' }}>{it.from ? 'від ' : ''}{Number(it.price).toLocaleString('uk-UA')} ₴</p>
+                  <p className="f-mono" style={{ fontSize: 'clamp(14px, 2vw, 15px)', whiteSpace: 'nowrap' }}>{it.from ? 'від ' : ''}{formatPrice(it.price)}</p>
                 </div>
               ))}
             </div>
