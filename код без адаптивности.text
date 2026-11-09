@@ -3,13 +3,14 @@ import {
   Menu, X, ArrowUpRight, Star, MapPin, Phone, Clock,
   Camera, Check, ChevronRight, ChevronLeft, Send,
   Plus, Trash2, Lock, Settings as SettingsIcon, Image as ImageIcon,
-  ListChecks, MessageSquare, RotateCcw, Upload, Bell, ToggleLeft, ToggleRight
+  ListChecks, MessageSquare, RotateCcw, Upload, Bell, ToggleLeft, ToggleRight, Play
 } from 'lucide-react';
 import heroImage from './assets/heroImage.jpg';
 
 const NAV = [
   { id: 'home', label: 'Головна' },
   { id: 'services', label: 'Послуги' },
+  { id: 'spa', label: 'SPA' },
   { id: 'portfolio', label: 'Портфоліо' },
   { id: 'reviews', label: 'Відгуки' },
   { id: 'contacts', label: 'Контакти' },
@@ -149,6 +150,28 @@ const DEFAULT_DATA = {
     { name: 'Ольга П.', service: 'Контурна пластика губ', rating: 4, text: 'Дуже акуратна, природна корекція — саме те, про що я просила. Набряк зійшов на другий день.' },
   ],
   pendingReviews: [],
+  spa: {
+    heroEyebrow: 'SPA-ритуали · Харків',
+    heroTitle: 'Head & Body SPA',
+    heroSubtitle: 'Глибокий релакс для голови, обличчя, тіла та ніг. Повні та короткі протоколи тривалістю від 1,5 до 2,5 години.',
+    hours: 'Пн–Сб 9:00–20:30, неділя — за запитом',
+    programs: [
+      { group: 'full', name: 'Head & Body SPA', parts: 'Голова · Обличчя · Тіло', duration: '2,5 год', price: '', img: '', text: 'Повний ритуал для голови, обличчя та тіла: догляд за шкірою голови, масаж обличчя та розслаблювальна робота з тілом.' },
+      { group: 'full', name: 'Head & Face SPA', parts: 'Голова · Обличчя', duration: '2,5 год', price: '', img: '', text: 'Догляд за шкірою голови та обличчя: очищення, масаж і зволожувальні маски для відновлення та спокою.' },
+      { group: 'full', name: 'Head SPA', parts: 'Голова', duration: '2,5 год', price: '', img: '', text: 'Ритуал для шкіри голови та волосся: очищення, масаж голови й шиї, живильні засоби.' },
+      { group: 'full', name: 'Foot SPA', parts: 'Ноги', duration: '2,5 год', price: '', img: '', text: 'Догляд за стопами та ногами: пом’якшення шкіри, розслаблювальний масаж і зволоження.' },
+      { group: 'short', name: 'Голова + обличчя', parts: 'Head & Face', duration: '1,5 год', price: '', img: '', text: 'Скорочений ритуал: догляд за шкірою голови та експрес-догляд за обличчям.' },
+      { group: 'short', name: 'Голова + ноги', parts: 'Head & Foot', duration: '1,5 год', price: '', img: '', text: 'Скорочений ритуал: масаж голови та розслаблювальний догляд за ногами.' },
+      { group: 'short', name: 'Голова', parts: 'Head', duration: '1,5 год', price: '', img: '', text: 'Скорочений ритуал для голови: очищення шкіри голови та розслаблювальний масаж.' },
+    ],
+    portfolio: [
+      { type: 'photo', src: '', poster: '', caption: 'Head & Body SPA' },
+      { type: 'photo', src: '', poster: '', caption: 'Head SPA' },
+      { type: 'video', src: '', poster: '', caption: 'Відео ритуалу' },
+      { type: 'photo', src: '', poster: '', caption: 'Foot SPA' },
+    ],
+    reviews: [],
+  },
 };
 
 const SiteDataContext = createContext(null);
@@ -180,6 +203,9 @@ function GlobalStyle() {
         --clay-dark: #A9584B;
         --taupe: #B7A78C;
         --line: #E3D9CB;
+        --header-bg: rgba(241,232,199,0.95);
+        --footer-bg: #7D8650;
+        --on-accent: #F6F0EC;
         background: var(--bg);
         color: var(--ink);
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -192,6 +218,72 @@ function GlobalStyle() {
         width: 100%;
       }
       .ls-root * { box-sizing: border-box; }
+
+      /* ===== SPA: шоколадно-графітова тема ===== */
+      .ls-root.ls-theme-spa {
+        --bg: #1C1714;
+        --surface: #261F1B;
+        --surface-soft: #211A17;
+        --ink: #F2E9DE;
+        --ink-soft: #C2B5A7;
+        --ink-faint: #8E8173;
+        --sage: #D2A679;
+        --sage-dark: #A57C54;
+        --clay: #C98B73;
+        --clay-dark: #E0A58E;
+        --taupe: #8E7B6A;
+        --line: rgba(242,233,222,0.14);
+        --header-bg: rgba(28,23,20,0.92);
+        --footer-bg: #120E0C;
+        --on-accent: #1C1410;
+        color-scheme: dark;
+      }
+      .ls-theme-spa .ls-input option { background: #261F1B; color: #F2E9DE; }
+      .ls-theme-spa .ls-btn-primary:hover { box-shadow: 0 8px 22px rgba(210,166,121,0.28); }
+      .ls-theme-spa .ls-card-hover:hover { box-shadow: 0 16px 34px rgba(0,0,0,0.45); }
+      .ls-theme-spa .ls-btn-outline { color: var(--ink); border-color: rgba(242,233,222,0.35); }
+      .ls-theme-spa .ls-btn-outline:hover { color: var(--sage); border-color: var(--sage); }
+
+      .spa-hero {
+        position: relative;
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse 70% 80% at 12% 0%, rgba(210,166,121,0.24), transparent 60%),
+          radial-gradient(ellipse 60% 70% at 95% 100%, rgba(120,84,60,0.42), transparent 55%),
+          linear-gradient(165deg, #3E2A20 0%, #2B2019 38%, #1D1815 72%, #151210 100%);
+      }
+      .spa-hero::after {
+        content: '';
+        position: absolute; left: 0; right: 0; bottom: 0; height: 90px;
+        background: linear-gradient(to bottom, transparent, var(--bg));
+        pointer-events: none;
+      }
+      .spa-glow {
+        position: absolute; width: 420px; height: 420px; border-radius: 50%;
+        right: -120px; top: -140px;
+        background: radial-gradient(circle, rgba(210,166,121,0.20), transparent 68%);
+        pointer-events: none;
+      }
+      .spa-line {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--sage), transparent);
+        opacity: 0.55;
+      }
+      .spa-chip {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 8px 14px; border-radius: 40px;
+        border: 1px solid rgba(210,166,121,0.35);
+        background: linear-gradient(90deg, rgba(210,166,121,0.14), rgba(210,166,121,0.03));
+        font-size: 13px; color: var(--ink);
+      }
+      .spa-card {
+        position: relative; display: flex; flex-direction: column; overflow: hidden;
+        border-radius: 2px; border: 1px solid var(--line);
+        background: linear-gradient(165deg, #2E2520 0%, #221B18 55%, #1B1613 100%);
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+      }
+      .spa-card:hover { transform: translateY(-4px); border-color: rgba(210,166,121,0.5); box-shadow: 0 18px 38px rgba(0,0,0,0.45); }
+      .spa-tile { position: relative; overflow: hidden; border-radius: 2px; border: 1px solid var(--line); }
       .f-display { font-family: 'Fraunces', serif; }
       .f-mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em; }
 
@@ -220,7 +312,7 @@ function GlobalStyle() {
         white-space: nowrap;
       }
       .ls-btn:active { transform: scale(0.97); }
-      .ls-btn-primary { background: var(--sage); color: #F6F0EC; }
+      .ls-btn-primary { background: var(--sage); color: var(--on-accent); }
       .ls-btn-primary:hover { background: var(--sage-dark); box-shadow: 0 6px 18px rgba(56,69,51,0.28); }
       .ls-btn-outline { background: transparent; color: var(--ink); border-color: var(--ink); }
       .ls-btn-outline:hover { border-color: var(--sage); color: var(--sage); }
@@ -356,7 +448,7 @@ function GlobalStyle() {
       }
       .ls-day:hover:not(:disabled) { border-color: var(--sage); }
       .ls-day:disabled { color: var(--ink-faint); cursor: not-allowed; opacity: 0.4; }
-      .ls-day.selected { background: var(--sage); color: #F6F0EC; }
+      .ls-day.selected { background: var(--sage); color: var(--on-accent); }
 
       .ls-slot {
         padding: 10px 4px;
@@ -370,7 +462,7 @@ function GlobalStyle() {
         transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
       }
       .ls-slot:hover { border-color: var(--sage); }
-      .ls-slot.selected { background: var(--sage); color: #F6F0EC; border-color: var(--sage); }
+      .ls-slot.selected { background: var(--sage); color: var(--on-accent); border-color: var(--sage); }
 
       .ls-responsive-grid-2 {
         display: grid;
@@ -548,7 +640,7 @@ function Header({ page, setPage }) {
   }, []);
   const go = (id) => { setPage(id); setOpen(false); };
   return (
-    <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'rgba(241,232,199,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--line)', boxShadow: scrolled ? '0 6px 20px rgba(38,34,31,0.06)' : 'none', transition: 'box-shadow 0.25s ease' }}>
+    <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'var(--header-bg)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--line)', boxShadow: scrolled ? '0 6px 20px rgba(38,34,31,0.06)' : 'none', transition: 'box-shadow 0.25s ease' }}>
       <Container style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 'clamp(60px, 8vw, 76px)' }}>
         <Logo onClick={() => go('home')} />
         <nav className="ls-hide-mobile" style={{ display: 'flex', gap: 'clamp(16px, 2.5vw, 32px)', alignItems: 'center' }}>
@@ -604,7 +696,7 @@ function Footer({ setPage }) {
   const cleanPhone = data.settings.phone.replace(/[^0-9+]/g, '');
 
   return (
-    <footer style={{ background: 'var(--sage-dark)', color: 'rgba(246,240,236,0.85)', marginTop: 'auto' }}>
+    <footer style={{ background: 'var(--footer-bg)', color: 'rgba(246,240,236,0.85)', marginTop: 'auto' }}>
       <Container style={{ padding: 'clamp(40px, 6vw, 56px) clamp(16px, 4vw, 24px) 32px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 32 }}>
         <div>
           <Logo dark onClick={() => setPage('home')} />
@@ -693,20 +785,22 @@ function Calendar({ value, onChange }) {
   );
 }
 
-function TimeSlots({ value, onChange }) {
+function TimeSlots({ value, onChange, slots }) {
   return (
     <div className="ls-slots-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
-      {TIME_SLOTS.map(t => (
+      {(slots || TIME_SLOTS).map(t => (
         <button type="button" key={t} className={`ls-slot ${value === t ? 'selected' : ''}`} onClick={() => onChange(t)}>{t}</button>
       ))}
     </div>
   );
 }
 
-function BookingForm({ dark }) {
+function BookingForm({ dark, spaOnly = false, preset = null, slots = null }) {
   const { data } = useSiteData();
-  const allServiceNames = data.serviceGroups.flatMap(g => g.items.map(i => i.name));
+  const spaNames = ((data.spa && data.spa.programs) || []).filter(p => p.name).map(spaLabel);
+  const allServiceNames = spaOnly ? spaNames : [...data.serviceGroups.flatMap(g => g.items.map(i => i.name)), ...spaNames];
   const [form, setForm] = useState({ firstName: '', lastName: '', service: '', date: null, time: '', phone: '' });
+  useEffect(() => { if (preset && preset.name) setForm(f => ({ ...f, service: preset.name })); }, [preset]);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
@@ -786,7 +880,7 @@ function BookingForm({ dark }) {
       </div>
       <div style={{ marginBottom: 20 }}>
         <label className="ls-label" style={{ color: labelColor }}>Бажаний час</label>
-        <TimeSlots value={form.time} onChange={(t) => setForm(f => ({ ...f, time: t }))} />
+        <TimeSlots value={form.time} slots={slots} onChange={(t) => setForm(f => ({ ...f, time: t }))} />
       </div>
       <div style={{ marginBottom: 20 }}>
         <label className="ls-label" style={{ color: labelColor }}>Телефон</label>
@@ -1043,6 +1137,7 @@ function HomePage({ setPage }) {
       <StatRow />
       <ScanDivider label="НАПРЯМКИ" />
       <ServicesTeaser setPage={setPage} />
+      <div style={{ marginTop: 'clamp(40px, 6vw, 72px)' }}><SpaTeaser setPage={setPage} /></div>
       <div style={{ marginTop: 'clamp(40px, 6vw, 88px)' }}><ReviewsTeaser setPage={setPage} /></div>
       <Container style={{ padding: 'clamp(40px, 6vw, 80px) clamp(16px, 4vw, 24px) clamp(48px, 8vw, 96px)' }}>
         <div className="ls-stack-mobile" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'start' }}>
@@ -1112,7 +1207,7 @@ function PortfolioPage() {
 
 function ReviewSubmitForm() {
   const { data, submitPendingReview } = useSiteData();
-  const serviceNames = data.serviceGroups.flatMap(g => g.items.map(i => i.name));
+  const serviceNames = [...data.serviceGroups.flatMap(g => g.items.map(i => i.name)), ...((data.spa && data.spa.programs) || []).filter(p => p.name).map(spaLabel)];
   const [form, setForm] = useState({ name: '', service: '', rating: 5, text: '' });
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
@@ -1336,6 +1431,7 @@ function AdminPage() {
   const tabs = [
     { id: 'services', label: 'Послуги', icon: <ListChecks size={16} /> },
     { id: 'portfolio', label: 'Портфоліо', icon: <ImageIcon size={16} /> },
+    { id: 'spa', label: 'SPA', icon: <Star size={16} /> },
     { id: 'reviews', label: 'Відгуки', icon: <MessageSquare size={16} /> },
     { id: 'moderation', label: `Модерація${pendingCount ? ` (${pendingCount})` : ''}`, icon: <Bell size={16} /> },
     { id: 'settings', label: 'Налаштування', icon: <SettingsIcon size={16} /> },
@@ -1480,6 +1576,112 @@ function AdminPage() {
         </div>
       )}
 
+      {tab === 'spa' && (() => {
+        const spa = draft.spa || DEFAULT_DATA.spa;
+        const setSpa = (fn) => setDraft(d => ({ ...d, spa: fn(d.spa || structuredCloneSafe(DEFAULT_DATA.spa)) }));
+        const setField = (key, val) => setSpa(sp => ({ ...sp, [key]: val }));
+        const setList = (list, i, patch) => setSpa(sp => { const arr = [...(sp[list] || [])]; arr[i] = { ...arr[i], ...patch }; return { ...sp, [list]: arr }; });
+        const delFrom = (list, i) => setSpa(sp => ({ ...sp, [list]: (sp[list] || []).filter((_, x) => x !== i) }));
+        const addTo = (list, item) => setSpa(sp => ({ ...sp, [list]: [...(sp[list] || []), item] }));
+        return (
+          <div>
+            <AdminSection title="Тексти сторінки SPA" icon={<Star size={16} color="var(--sage)" />}>
+              <AdminField label="Напис над заголовком" value={spa.heroEyebrow || ''} onChange={(e) => setField('heroEyebrow', e.target.value)} />
+              <AdminField label="Заголовок" value={spa.heroTitle || ''} onChange={(e) => setField('heroTitle', e.target.value)} />
+              <div style={{ marginBottom: 10 }}>
+                <label className="ls-label">Підзаголовок</label>
+                <textarea className="ls-input" rows={3} value={spa.heroSubtitle || ''} onChange={(e) => setField('heroSubtitle', e.target.value)} />
+              </div>
+              <AdminField label="Години роботи SPA" value={spa.hours || ''} onChange={(e) => setField('hours', e.target.value)} />
+              <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)' }}>Адреса, телефон та месенджери беруться з вкладки «Налаштування».</p>
+            </AdminSection>
+
+            {(spa.programs || []).map((p, i) => (
+              <AdminSection
+                key={i}
+                title={p.name || 'Без назви'}
+                icon={<Star size={16} color="var(--sage)" />}
+                actions={<button className="ls-btn-danger" onClick={() => delFrom('programs', i)}><Trash2 size={15} /></button>}
+              >
+                <div className="ls-admin-grid-2">
+                  <div>
+                    <label className="ls-label">Протокол</label>
+                    <select className="ls-input" value={p.group || 'full'} onChange={(e) => setList('programs', i, { group: e.target.value })}>
+                      <option value="full">Повний протокол</option>
+                      <option value="short">Короткий протокол</option>
+                    </select>
+                  </div>
+                  <AdminField label="Назва" value={p.name || ''} onChange={(e) => setList('programs', i, { name: e.target.value })} />
+                </div>
+                <div className="ls-admin-grid-2">
+                  <AdminField label="Що входить (напр. Голова · Обличчя · Тіло)" value={p.parts || ''} onChange={(e) => setList('programs', i, { parts: e.target.value })} />
+                  <AdminField label="Тривалість (1,5 год або 2,5 год)" value={p.duration || ''} onChange={(e) => setList('programs', i, { duration: e.target.value })} />
+                </div>
+                <AdminField label="Ціна, ₴ (порожньо = «за запитом»)" value={p.price || ''} onChange={(e) => setList('programs', i, { price: e.target.value })} />
+                <div style={{ marginBottom: 10 }}>
+                  <label className="ls-label">Короткий опис процедури</label>
+                  <textarea className="ls-input" rows={3} value={p.text || ''} onChange={(e) => setList('programs', i, { text: e.target.value })} />
+                </div>
+                <ImageUploader label="Фото програми" value={p.img} onChange={(val) => setList('programs', i, { img: val })} />
+              </AdminSection>
+            ))}
+            <button className="ls-btn ls-btn-outline" style={{ marginBottom: 28 }} onClick={() => addTo('programs', { group: 'full', name: 'Нова програма', parts: '', duration: '2,5 год', price: '', img: '', text: '' })}><Plus size={15} /> Додати програму</button>
+
+            {(spa.portfolio || []).map((c, i) => (
+              <AdminSection
+                key={i}
+                title={c.caption || 'Без підпису'}
+                icon={<ImageIcon size={16} color="var(--sage)" />}
+                actions={<button className="ls-btn-danger" onClick={() => delFrom('portfolio', i)}><Trash2 size={15} /></button>}
+              >
+                <div className="ls-admin-grid-2">
+                  <div>
+                    <label className="ls-label">Тип</label>
+                    <select className="ls-input" value={c.type || 'photo'} onChange={(e) => setList('portfolio', i, { type: e.target.value })}>
+                      <option value="photo">Фото</option>
+                      <option value="video">Відео</option>
+                    </select>
+                  </div>
+                  <AdminField label="Підпис" value={c.caption || ''} onChange={(e) => setList('portfolio', i, { caption: e.target.value })} />
+                </div>
+                {c.type === 'video' ? (
+                  <div>
+                    <AdminField label="Відео: посилання YouTube або файл .mp4 (напр. /spa/video1.mp4)" value={c.src || ''} onChange={(e) => setList('portfolio', i, { src: e.target.value })} />
+                    <ImageUploader label="Обкладинка відео (необов’язково)" value={c.poster} onChange={(val) => setList('portfolio', i, { poster: val })} />
+                  </div>
+                ) : (
+                  <ImageUploader label="Фото" value={c.src} onChange={(val) => setList('portfolio', i, { src: val })} />
+                )}
+              </AdminSection>
+            ))}
+            <button className="ls-btn ls-btn-outline" style={{ marginBottom: 12 }} onClick={() => addTo('portfolio', { type: 'photo', src: '', poster: '', caption: '' })}><Plus size={15} /> Додати фото / відео</button>
+            <p className="f-mono" style={{ fontSize: 10, color: 'var(--ink-faint)', marginBottom: 28 }}>Порада: великі файли краще класти в папку public/spa у проєкті й вказувати шлях на кшталт /spa/photo1.jpg — так сайт працює швидше, ніж із завантаженими прямо в адмінці.</p>
+
+            {(spa.reviews || []).map((r, i) => (
+              <AdminSection
+                key={i}
+                title={r.name || 'Без імені'}
+                icon={<MessageSquare size={16} color="var(--sage)" />}
+                actions={<button className="ls-btn-danger" onClick={() => delFrom('reviews', i)}><Trash2 size={15} /></button>}
+              >
+                <div className="ls-admin-grid-2">
+                  <AdminField label="Ім’я" value={r.name || ''} onChange={(e) => setList('reviews', i, { name: e.target.value })} />
+                  <div>
+                    <label className="ls-label">Оцінка</label>
+                    <select className="ls-input" value={r.rating || 5} onChange={(e) => setList('reviews', i, { rating: Number(e.target.value) })}>
+                      {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <label className="ls-label">Текст відгуку</label>
+                <textarea className="ls-input" rows={3} value={r.text || ''} onChange={(e) => setList('reviews', i, { text: e.target.value })} />
+              </AdminSection>
+            ))}
+            <button className="ls-btn ls-btn-outline" onClick={() => addTo('reviews', { name: '', rating: 5, text: '' })}><Plus size={15} /> Додати відгук про SPA</button>
+          </div>
+        );
+      })()}
+
       {tab === 'reviews' && (
         <div>
           {draft.reviews.map((r, ri) => (
@@ -1495,7 +1697,7 @@ function AdminPage() {
                   <label className="ls-label">Послуга</label>
                   <select className="ls-input" value={r.service} onChange={(e) => setDraft(d => { const rv = [...d.reviews]; rv[ri] = { ...rv[ri], service: e.target.value }; return { ...d, reviews: rv }; })}>
                     <option value="">Оберіть послугу</option>
-                    {draft.serviceGroups.flatMap(g => g.items.map(i => i.name)).map(s => <option key={s} value={s}>{s}</option>)}
+                    {[...draft.serviceGroups.flatMap(g => g.items.map(i => i.name)), ...((draft.spa && draft.spa.programs) || []).filter(p => p.name).map(spaLabel)].map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
               </div>
@@ -1574,7 +1776,306 @@ function AdminPage() {
   );
 }
 
-const PAGE_IDS = ['home', 'services', 'portfolio', 'reviews', 'contacts', 'admin'];
+
+/* ===================== SPA ===================== */
+const SPA_SLOTS = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+const SPA_GRADIENTS = [
+  'linear-gradient(135deg,#5A3E2E 0%,#2A1F1A 100%)',
+  'linear-gradient(135deg,#3A3633 0%,#1B1816 100%)',
+  'linear-gradient(135deg,#7A5640 0%,#3A281F 100%)',
+  'linear-gradient(135deg,#46413D 0%,#241F1C 100%)',
+];
+
+function spaLabel(p) {
+  return `SPA ${p.group === 'short' ? '(короткий)' : '(повний)'} · ${p.name}`;
+}
+
+function assetUrl(src) {
+  if (!src) return '';
+  if (/^(https?:|data:|blob:|\/\/)/.test(src)) return src;
+  if (src.startsWith('/')) return `${BASE_PATH}${src}`;
+  return src;
+}
+
+function youtubeId(url) {
+  const m = String(url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
+function spaPrice(price) {
+  const raw = String(price == null ? '' : price).trim();
+  if (!raw) return 'Ціна за запитом';
+  if (/^\d+([.,]\d+)?$/.test(raw)) return `${Number(raw.replace(',', '.')).toLocaleString('uk-UA')} ₴`;
+  return raw;
+}
+
+function SpaHeading({ eyebrow, title, text }) {
+  return (
+    <Reveal>
+      <p className="ls-eyebrow" style={{ marginBottom: 10 }}>{eyebrow}</p>
+      <h2 className="f-display" style={{ fontSize: 'clamp(26px, 4vw, 38px)', margin: `0 0 ${text ? 12 : 28}px` }}>{title}</h2>
+      {text && <p style={{ fontSize: 15, color: 'var(--ink-soft)', maxWidth: 560, marginBottom: 32 }}>{text}</p>}
+    </Reveal>
+  );
+}
+
+function SpaProgramCard({ p, index, onChoose }) {
+  const bg = p.img
+    ? { backgroundImage: `url(${assetUrl(p.img)})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : { background: SPA_GRADIENTS[index % SPA_GRADIENTS.length] };
+  return (
+    <div className="spa-card" style={{ height: '100%' }}>
+      <div style={{ position: 'relative', aspectRatio: '4 / 3', ...bg }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(20,16,14,0) 40%, rgba(20,16,14,0.65) 100%)' }} />
+        <span className="spa-chip" style={{ position: 'absolute', left: 14, bottom: 14, background: 'rgba(20,16,14,0.65)', backdropFilter: 'blur(6px)' }}>
+          <Clock size={13} color="var(--sage)" /> {p.duration}
+        </span>
+      </div>
+      <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+        <p className="ls-eyebrow">{p.parts}</p>
+        <h3 className="f-display" style={{ fontSize: 24, fontWeight: 500, margin: 0 }}>{p.name}</h3>
+        <p style={{ fontSize: 14, color: 'var(--ink-soft)', flex: 1 }}>{p.text}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', borderTop: '1px solid var(--line)', paddingTop: 14, marginTop: 6 }}>
+          <span className="f-mono" style={{ fontSize: 14 }}>{spaPrice(p.price)}</span>
+          <button className="ls-btn ls-btn-primary ls-btn-sm" onClick={() => onChoose(p)}>Записатися</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SpaMedia({ item, index }) {
+  const isVideo = item.type === 'video';
+  const src = assetUrl(item.src);
+  const yt = isVideo ? youtubeId(item.src) : null;
+  const placeholder = { background: SPA_GRADIENTS[index % SPA_GRADIENTS.length] };
+  let inner;
+  if (isVideo && yt) {
+    inner = <iframe src={`https://www.youtube.com/embed/${yt}`} title={item.caption || 'Відео'} loading="lazy" allowFullScreen style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }} />;
+  } else if (isVideo && src) {
+    inner = <video src={src} poster={assetUrl(item.poster) || undefined} controls playsInline preload="metadata" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', background: '#120E0C' }} />;
+  } else if (!isVideo && src) {
+    inner = <img src={src} alt={item.caption || 'SPA'} loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />;
+  } else {
+    inner = (
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', ...placeholder }}>
+        {isVideo
+          ? <div style={{ width: 54, height: 54, borderRadius: '50%', border: '1px solid rgba(210,166,121,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Play size={20} color="#D2A679" /></div>
+          : <Camera size={24} color="rgba(242,233,222,0.35)" />}
+      </div>
+    );
+  }
+  return (
+    <div>
+      <div className="spa-tile" style={{ aspectRatio: '4 / 5' }}>{inner}</div>
+      {item.caption && <p className="f-mono" style={{ fontSize: 11, color: 'var(--ink-soft)', marginTop: 10 }}>{item.caption}</p>}
+    </div>
+  );
+}
+
+function SpaPage({ setPage }) {
+  const { data } = useSiteData();
+  const spa = data.spa || DEFAULT_DATA.spa;
+  const s = data.settings;
+  const cleanPhone = s.phone.replace(/[^0-9+]/g, '');
+  const programsRef = useRef(null);
+  const bookingRef = useRef(null);
+  const [preset, setPreset] = useState(null);
+
+  const programs = (spa.programs || []).filter(p => p.name);
+  const full = programs.filter(p => p.group !== 'short');
+  const short = programs.filter(p => p.group === 'short');
+  const scrollTo = (ref) => { if (ref.current) ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  const choose = (p) => { setPreset({ name: spaLabel(p), n: Date.now() }); scrollTo(bookingRef); };
+
+  const reviews = spa.reviews || [];
+  const socials = [
+    { href: s.instagramUrl, icon: <Camera size={16} />, label: 'Instagram' },
+    { href: s.telegramUrl, icon: <TelegramGlyph />, label: 'Telegram' },
+    { href: s.whatsappUrl, icon: <WhatsAppGlyph />, label: 'WhatsApp' },
+    { href: s.viberUrl, icon: <ViberGlyph />, label: 'Viber' },
+  ].filter(x => x.href);
+
+  const renderGroup = (title, note, list, offset) => list.length > 0 && (
+    <div style={{ marginBottom: 'clamp(36px, 6vw, 56px)' }}>
+      <Reveal>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}>
+          <h3 className="f-display" style={{ fontSize: 'clamp(22px, 3vw, 28px)', fontWeight: 500, margin: 0 }}>{title}</h3>
+          <span className="f-mono" style={{ fontSize: 11, color: 'var(--sage)' }}>{note}</span>
+        </div>
+      </Reveal>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))', gap: 20 }}>
+        {list.map((p, i) => (
+          <Reveal key={p.name + i} delay={i * 0.07}><SpaProgramCard p={p} index={offset + i} onChoose={choose} /></Reveal>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      {/* HERO */}
+      <div className="spa-hero">
+        <div className="spa-glow" />
+        <Container style={{ position: 'relative', zIndex: 1, padding: 'clamp(56px, 9vw, 112px) clamp(16px, 4vw, 24px) clamp(64px, 10vw, 120px)' }}>
+          <Reveal>
+            <p className="ls-eyebrow" style={{ marginBottom: 18 }}>{spa.heroEyebrow}</p>
+            <h1 className="f-display" style={{ fontSize: 'clamp(36px, 7vw, 76px)', lineHeight: 1.04, fontWeight: 500, margin: '0 0 22px', background: 'linear-gradient(100deg,#F6EBDD 0%,#E3C29C 55%,#C8966A 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent' }}>{spa.heroTitle}</h1>
+            <p style={{ fontSize: 'clamp(14px, 1.9vw, 17px)', color: 'var(--ink-soft)', maxWidth: 520, marginBottom: 28 }}>{spa.heroSubtitle}</p>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 32 }}>
+              <span className="spa-chip"><Clock size={14} color="var(--sage)" /> 1,5 або 2,5 години</span>
+              <span className="spa-chip"><Clock size={14} color="var(--sage)" /> {spa.hours}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              <button className="ls-btn ls-btn-primary" onClick={() => scrollTo(programsRef)}>Обрати програму <ChevronRight size={15} /></button>
+              <button className="ls-btn ls-btn-outline" onClick={() => scrollTo(bookingRef)}>Записатися</button>
+            </div>
+          </Reveal>
+        </Container>
+      </div>
+
+      {/* PROGRAMS */}
+      <div ref={programsRef} style={{ scrollMarginTop: 90 }}>
+        <Container style={{ padding: 'clamp(24px, 4vw, 40px) clamp(16px, 4vw, 24px) clamp(40px, 6vw, 72px)' }}>
+          <SpaHeading eyebrow="Програми" title="Види SPA" text="Оберіть повний або короткий протокол. Остаточну програму та час узгодимо під ваш запит." />
+          {renderGroup('Повний протокол', '2,5 години', full, 0)}
+          {renderGroup('Короткий протокол', '1,5 години', short, full.length)}
+        </Container>
+      </div>
+
+      <div className="spa-line" />
+
+      {/* PORTFOLIO */}
+      <Container style={{ padding: 'clamp(40px, 6vw, 80px) clamp(16px, 4vw, 24px)' }}>
+        <SpaHeading eyebrow="Портфоліо" title="Фото та відео" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 18 }}>
+          {(spa.portfolio || []).map((item, i) => (
+            <Reveal key={i} delay={(i % 4) * 0.06}><SpaMedia item={item} index={i} /></Reveal>
+          ))}
+        </div>
+      </Container>
+
+      <div className="spa-line" />
+
+      {/* HOURS + CONTACTS */}
+      <Container style={{ padding: 'clamp(40px, 6vw, 80px) clamp(16px, 4vw, 24px)' }}>
+        <SpaHeading eyebrow="Контакти" title="Години роботи та адреса" />
+        <div className="ls-contacts-grid" style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: 'clamp(24px, 5vw, 56px)' }}>
+          <Reveal>
+            <div style={{ marginBottom: 26 }}>
+              <p className="ls-eyebrow" style={{ marginBottom: 8 }}>Години роботи SPA</p>
+              <p style={{ fontSize: 15, display: 'flex', gap: 10, alignItems: 'flex-start' }}><Clock size={16} style={{ marginTop: 3, flexShrink: 0 }} color="var(--sage)" /> {spa.hours}</p>
+            </div>
+            <div style={{ marginBottom: 26 }}>
+              <p className="ls-eyebrow" style={{ marginBottom: 8 }}>Адреса</p>
+              <p style={{ fontSize: 15, display: 'flex', gap: 10, alignItems: 'flex-start' }}><MapPin size={16} style={{ marginTop: 3, flexShrink: 0 }} color="var(--sage)" /> {s.address}</p>
+            </div>
+            <div style={{ marginBottom: 26 }}>
+              <p className="ls-eyebrow" style={{ marginBottom: 8 }}>Телефон</p>
+              <p style={{ fontSize: 15, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <Phone size={16} style={{ marginTop: 3, flexShrink: 0 }} color="var(--sage)" />
+                <a href={`tel:${cleanPhone}`} className="ls-phone-link">{s.phone}</a>
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {socials.map(x => (
+                <a key={x.label} href={x.href} target="_blank" rel="noopener noreferrer" aria-label={x.label}
+                  style={{ width: 38, height: 38, borderRadius: '50%', border: '1px solid rgba(210,166,121,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sage)', textDecoration: 'none' }}>
+                  {x.icon}
+                </a>
+              ))}
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div style={{ height: 260, borderRadius: 2, overflow: 'hidden', border: '1px solid var(--line)' }}>
+              <iframe
+                src="https://www.google.com/maps?q=вул.+Трінклера,+2,+Харків&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0, filter: 'grayscale(0.6) contrast(0.95)' }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Карта проїзду"
+              ></iframe>
+            </div>
+          </Reveal>
+        </div>
+      </Container>
+
+      <div className="spa-line" />
+
+      {/* REVIEWS */}
+      <Container style={{ padding: 'clamp(40px, 6vw, 80px) clamp(16px, 4vw, 24px)' }}>
+        <SpaHeading eyebrow="Відгуки" title="Що кажуть гості" />
+        {reviews.length === 0 ? (
+          <Reveal>
+            <div className="ls-card" style={{ padding: 28, maxWidth: 560 }}>
+              <p style={{ fontSize: 14, color: 'var(--ink-soft)', marginBottom: 18 }}>Відгуки про SPA-ритуали з’являться тут. Ви вже були у нас? Поділіться враженнями — ваш відгук побачать інші гості.</p>
+              <button className="ls-btn ls-btn-outline" onClick={() => setPage('reviews')}>Залишити відгук <ChevronRight size={15} /></button>
+            </div>
+          </Reveal>
+        ) : (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 20 }}>
+              {reviews.map((r, i) => (
+                <Reveal key={i} delay={(i % 3) * 0.08}>
+                  <div className="ls-card ls-card-hover" style={{ padding: 24, height: '100%' }}>
+                    <div style={{ display: 'flex', gap: 3, marginBottom: 12 }}>
+                      {Array.from({ length: 5 }).map((_, si) => (
+                        <Star key={si} size={13} fill={si < r.rating ? '#D2A679' : 'none'} color={si < r.rating ? '#D2A679' : 'var(--line)'} />
+                      ))}
+                    </div>
+                    <p style={{ fontSize: 14, color: 'var(--ink-soft)', marginBottom: 16 }}>{r.text}</p>
+                    <p style={{ fontSize: 13, fontWeight: 500 }}>{r.name}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+            <div style={{ marginTop: 24 }}>
+              <button className="ls-btn ls-btn-outline" onClick={() => setPage('reviews')}>Залишити відгук <ChevronRight size={15} /></button>
+            </div>
+          </div>
+        )}
+      </Container>
+
+      <div className="spa-line" />
+
+      {/* BOOKING */}
+      <div ref={bookingRef} style={{ scrollMarginTop: 90 }}>
+        <Container style={{ padding: 'clamp(40px, 6vw, 80px) clamp(16px, 4vw, 24px) clamp(48px, 8vw, 96px)' }}>
+          <div className="ls-stack-mobile" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(24px, 5vw, 56px)', alignItems: 'start' }}>
+            <Reveal>
+              <p className="ls-eyebrow" style={{ marginBottom: 10 }}>Запис</p>
+              <h2 className="f-display" style={{ fontSize: 'clamp(26px, 4vw, 36px)', margin: '0 0 16px' }}>Забронюйте свій SPA-ритуал</h2>
+              <p style={{ fontSize: 14, color: 'var(--ink-soft)', maxWidth: 400 }}>Оберіть програму, дату та час — адміністратор зв’яжеться з вами, щоб підтвердити візит. Останній початок ритуалу — о 18:00, щоб повний протокол завершився до 20:30.</p>
+            </Reveal>
+            <Reveal delay={0.1}><BookingForm spaOnly preset={preset} slots={SPA_SLOTS} /></Reveal>
+          </div>
+        </Container>
+      </div>
+    </div>
+  );
+}
+
+function SpaTeaser({ setPage }) {
+  const { data } = useSiteData();
+  const spa = data.spa || DEFAULT_DATA.spa;
+  return (
+    <Container>
+      <Reveal>
+        <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 2, padding: 'clamp(28px, 5vw, 56px)', color: '#F2E9DE', border: '1px solid rgba(210,166,121,0.3)', background: 'radial-gradient(ellipse 60% 90% at 100% 0%, rgba(210,166,121,0.28), transparent 60%), linear-gradient(120deg,#3E2A20 0%,#261D18 55%,#171412 100%)' }}>
+          <p className="ls-eyebrow" style={{ color: '#D2A679', marginBottom: 12 }}>Новий напрямок</p>
+          <h2 className="f-display" style={{ fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 500, margin: '0 0 14px' }}>{spa.heroTitle}</h2>
+          <p style={{ fontSize: 'clamp(14px, 1.8vw, 16px)', color: 'rgba(242,233,222,0.75)', maxWidth: 520, marginBottom: 26 }}>{spa.heroSubtitle}</p>
+          <button className="ls-btn" style={{ background: '#D2A679', color: '#1C1410' }} onClick={() => setPage('spa')}>Дізнатися більше <ArrowUpRight size={15} /></button>
+        </div>
+      </Reveal>
+    </Container>
+  );
+}
+
+const PAGE_IDS = ['home', 'services', 'spa', 'portfolio', 'reviews', 'contacts', 'admin'];
 
 const BASE_PATH = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 
@@ -1667,6 +2168,7 @@ export default function App() {
   const pages = {
     home: <HomePage setPage={navigate} />,
     services: <ServicesPage />,
+    spa: <SpaPage setPage={navigate} />,
     portfolio: <PortfolioPage />,
     reviews: <ReviewsPage />,
     contacts: <ContactsPage />,
@@ -1679,7 +2181,7 @@ export default function App() {
 
   return (
     <SiteDataContext.Provider value={{ data, persist, submitPendingReview }}>
-      <div className="ls-root">
+      <div className={`ls-root${page === 'spa' ? ' ls-theme-spa' : ''}`}>
         <GlobalStyle />
         <Header page={page} setPage={navigate} />
         <div style={{ paddingTop: 'clamp(60px, 8vw, 76px)' }}>

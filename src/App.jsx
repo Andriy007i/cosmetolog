@@ -235,10 +235,14 @@ function GlobalStyle() {
         --line: rgba(242,233,222,0.14);
         --header-bg: rgba(28,23,20,0.92);
         --footer-bg: #120E0C;
-        --on-accent: #1C1410;
+        --on-accent: #FFF6EA;
         color-scheme: dark;
       }
       .ls-theme-spa .ls-input option { background: #261F1B; color: #F2E9DE; }
+      .ls-theme-spa .ls-btn-primary { background: #8C6641; }
+      .ls-theme-spa .ls-btn-primary:hover { background: #A57C54; }
+      .ls-theme-spa .ls-day.selected,
+      .ls-theme-spa .ls-slot.selected { background: #8C6641; border-color: #8C6641; color: var(--on-accent); }
       .ls-theme-spa .ls-btn-primary:hover { box-shadow: 0 8px 22px rgba(210,166,121,0.28); }
       .ls-theme-spa .ls-card-hover:hover { box-shadow: 0 16px 34px rgba(0,0,0,0.45); }
       .ls-theme-spa .ls-btn-outline { color: var(--ink); border-color: rgba(242,233,222,0.35); }
@@ -797,6 +801,8 @@ function TimeSlots({ value, onChange, slots }) {
 
 function BookingForm({ dark, spaOnly = false, preset = null, slots = null }) {
   const { data } = useSiteData();
+  const who = spaOnly ? 'майстер' : 'косметолог';
+  const Who = spaOnly ? 'Майстер' : 'Косметолог';
   const spaNames = ((data.spa && data.spa.programs) || []).filter(p => p.name).map(spaLabel);
   const allServiceNames = spaOnly ? spaNames : [...data.serviceGroups.flatMap(g => g.items.map(i => i.name)), ...spaNames];
   const [form, setForm] = useState({ firstName: '', lastName: '', service: '', date: null, time: '', phone: '' });
@@ -844,7 +850,7 @@ function BookingForm({ dark, spaOnly = false, preset = null, slots = null }) {
         </div>
         <p className="f-display" style={{ fontSize: 20, marginBottom: 8, color: dark ? '#fff' : 'var(--ink)' }}>Заявку відправлено</p>
         <p style={{ fontSize: 14, color: labelColor, marginBottom: 20 }}>
-          {form.firstName}, ми отримали вашу заявку на «{form.service}». Косметолог зв’яжеться з вами за номером {form.phone}, щоб узгодити візит — постараємося потрапити у бажаний час: {dateLabel}, {form.time}.
+          {form.firstName}, ми отримали вашу заявку на «{form.service}». {Who} зв’яжеться з вами за номером {form.phone}, щоб узгодити візит — постараємося потрапити у бажаний час: {dateLabel}, {form.time}.
         </p>
         <button className="ls-btn ls-btn-outline" style={dark ? { color: '#fff', borderColor: 'rgba(255,255,255,0.4)' } : {}} onClick={() => { setSent(false); setForm({ firstName: '', lastName: '', service: '', date: null, time: '', phone: '' }); }}>
           Надіслати ще одну заявку
@@ -891,7 +897,7 @@ function BookingForm({ dark, spaOnly = false, preset = null, slots = null }) {
         {sending ? 'Надсилаємо…' : <>Надіслати заявку <Send size={15} /></>}
       </button>
       <p style={{ fontSize: 12, color: labelColor, marginTop: 12 }}>
-        Це заявка на зв’язок, а не підтверджений запис — точну дату та час узгодить косметолог.
+        Це заявка на зв’язок, а не підтверджений запис — точну дату та час узгодить {who}.
       </p>
     </form>
   );
@@ -1493,7 +1499,7 @@ function AdminPage() {
               {g.items.map((it, ii) => (
                 <div key={ii} className="ls-admin-item-row">
                   <input className="ls-input" placeholder="Назва послуги" value={it.name} onChange={(e) => setDraft(d => { const sg = [...d.serviceGroups]; const items = [...sg[gi].items]; items[ii] = { ...items[ii], name: e.target.value }; sg[gi] = { ...sg[gi], items }; return { ...d, serviceGroups: sg }; })} />
-                  <input className="ls-input" type="number" placeholder="Ціна" value={it.price} onChange={(e) => setDraft(d => { const sg = [...d.serviceGroups]; const items = [...sg[gi].items]; items[ii] = { ...items[ii], price: e.target.value }; sg[gi] = { ...sg[gi], items }; return { ...d, serviceGroups: sg }; })} />
+                  <input className="ls-input" type="text" inputMode="text" placeholder="800 або 800-900" value={it.price} onChange={(e) => setDraft(d => { const sg = [...d.serviceGroups]; const items = [...sg[gi].items]; items[ii] = { ...items[ii], price: e.target.value }; sg[gi] = { ...sg[gi], items }; return { ...d, serviceGroups: sg }; })} />
                   <input className="ls-input" placeholder="60 хв" value={it.time} onChange={(e) => setDraft(d => { const sg = [...d.serviceGroups]; const items = [...sg[gi].items]; items[ii] = { ...items[ii], time: e.target.value }; sg[gi] = { ...sg[gi], items }; return { ...d, serviceGroups: sg }; })} />
                   <button className="ls-btn-danger" onClick={() => setDraft(d => { const sg = [...d.serviceGroups]; sg[gi] = { ...sg[gi], items: sg[gi].items.filter((_, x) => x !== ii) }; return { ...d, serviceGroups: sg }; })}><Trash2 size={15} /></button>
                 </div>
@@ -1785,6 +1791,15 @@ const SPA_GRADIENTS = [
   'linear-gradient(135deg,#7A5640 0%,#3A281F 100%)',
   'linear-gradient(135deg,#46413D 0%,#241F1C 100%)',
 ];
+function formatPrice(price) {
+  const raw = String(price == null ? '' : price).trim();
+  if (!raw) return '';
+  const fmt = (n) => Number(n.replace(',', '.')).toLocaleString('uk-UA');
+  const range = raw.match(/^(\d+(?:[.,]\d+)?)\s*[-–—]\s*(\d+(?:[.,]\d+)?)$/);
+  if (range) return `${fmt(range[1])}–${fmt(range[2])} ₴`;
+  if (/^\d+(?:[.,]\d+)?$/.test(raw)) return `${fmt(raw)} ₴`;
+  return raw;
+}
 
 function spaLabel(p) {
   return `SPA ${p.group === 'short' ? '(короткий)' : '(повний)'} · ${p.name}`;
@@ -1803,10 +1818,7 @@ function youtubeId(url) {
 }
 
 function spaPrice(price) {
-  const raw = String(price == null ? '' : price).trim();
-  if (!raw) return 'Ціна за запитом';
-  if (/^\d+([.,]\d+)?$/.test(raw)) return `${Number(raw.replace(',', '.')).toLocaleString('uk-UA')} ₴`;
-  return raw;
+  return formatPrice(price) || 'Ціна за запитом';
 }
 
 function SpaHeading({ eyebrow, title, text }) {
