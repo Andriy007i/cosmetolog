@@ -893,7 +893,7 @@ function TimeSlots({ value, onChange, slots }) {
   );
 }
 
-function BookingForm({ dark, spaOnly = false, preset = null, slots = null }) {
+function BookingForm({ dark, spaOnly = false, preset = null, slots = null, onSuccess = null }) {
   const { data } = useSiteData();
   const who = spaOnly ? 'майстер' : 'косметолог';
   const Who = spaOnly ? 'Майстер' : 'Косметолог';
@@ -927,7 +927,17 @@ function BookingForm({ dark, spaOnly = false, preset = null, slots = null }) {
     setSending(false);
 
     if (ok) {
-      setSent(true);
+      if (onSuccess) {                                   // ← НОВОЕ
+        onSuccess({                                      // ← НОВОЕ
+          firstName: form.firstName.trim(),
+          service: form.service,
+          date: dateLabelForSend,
+          time: form.time,
+          phone: form.phone.trim(),
+        });
+      } else {
+        setSent(true);
+      }
     } else {
       setError('Не вдалося надіслати заявку — перевірте інтернет-з’єднання та спробуйте ще раз.');
     }
@@ -1979,7 +1989,7 @@ function SpaMedia({ item, index }) {
   );
 }
 
-function SpaPage({ setPage }) {
+function SpaPage({ setPage, onBooked }) {  // ← НОВОЕ: onBooked
   const { data } = useSiteData();
   const spa = data.spa || DEFAULT_DATA.spa;
   const s = data.settings;
@@ -2156,7 +2166,7 @@ function SpaPage({ setPage }) {
               <h2 className="f-display" style={{ fontSize: 'clamp(26px, 4vw, 36px)', margin: '0 0 16px' }}>Забронюйте свій SPA-ритуал</h2>
               <p style={{ fontSize: 14, color: 'var(--ink-soft)', maxWidth: 400 }}>Оберіть програму, дату та час — адміністратор зв’яжеться з вами, щоб підтвердити візит. Останній початок ритуалу — о 18:00, щоб повний протокол завершився до 20:30.</p>
             </Reveal>
-            <Reveal delay={0.1}><BookingForm spaOnly preset={preset} slots={SPA_SLOTS} /></Reveal>
+            <Reveal delay={0.1}><BookingForm spaOnly preset={preset} slots={SPA_SLOTS} onSuccess={onBooked} /></Reveal>
           </div>
         </Container>
       </div>
@@ -2180,8 +2190,58 @@ function SpaTeaser({ setPage }) {
     </Container>
   );
 }
+const THANKS_SECONDS = 8; // через скільки секунд повертати на SPA
 
-const PAGE_IDS = ['home', 'services', 'spa', 'portfolio', 'reviews', 'contacts', 'admin'];
+function ThanksPage({ setPage, info }) {
+  const [left, setLeft] = useState(THANKS_SECONDS);
+
+  useEffect(() => {
+    if (left <= 0) { setPage('spa', { replace: true }); return; }
+    const t = setTimeout(() => setLeft(l => l - 1), 1000);
+    return () => clearTimeout(t);
+  }, [left, setPage]);
+
+  return (
+    <div className="spa-hero" style={{ minHeight: 'calc(100vh - 76px)', display: 'flex', alignItems: 'center' }}>
+      <div className="spa-glow" />
+      <Container style={{ position: 'relative', zIndex: 1, padding: 'clamp(48px, 8vw, 96px) clamp(16px, 4vw, 24px)', textAlign: 'center' }}>
+        <Reveal>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#8C6641', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px' }}>
+            <Check size={32} color="#FFF6EA" />
+          </div>
+          <p className="ls-eyebrow" style={{ marginBottom: 14 }}>Заявку надіслано</p>
+          <h1 className="f-display" style={{ fontSize: 'clamp(30px, 5vw, 52px)', fontWeight: 500, margin: '0 0 18px' }}>
+            Дякуємо{info && info.firstName ? `, ${info.firstName}` : ''}!
+          </h1>
+          <p style={{ fontSize: 'clamp(15px, 2vw, 18px)', color: 'var(--ink-soft)', maxWidth: 520, margin: '0 auto 24px' }}>
+            Ваш запис збережено. Майстер зв’яжеться з вами найближчим часом, щоб підтвердити візит.
+          </p>
+
+          {info && (
+            <div className="ls-card" style={{ display: 'inline-block', textAlign: 'left', padding: '18px 24px', marginBottom: 28, maxWidth: '100%' }}>
+              <p style={{ fontSize: 14, marginBottom: 6 }}><span style={{ color: 'var(--ink-faint)' }}>Програма: </span>{info.service}</p>
+              <p style={{ fontSize: 14, marginBottom: 6 }}><span style={{ color: 'var(--ink-faint)' }}>Бажана дата: </span>{info.date}, {info.time}</p>
+              <p style={{ fontSize: 14 }}><span style={{ color: 'var(--ink-faint)' }}>Телефон: </span>{info.phone}</p>
+            </div>
+          )}
+
+          <div style={{ maxWidth: 320, margin: '0 auto 20px' }}>
+            <div style={{ height: 3, background: 'var(--line)', borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ width: `${(left / THANKS_SECONDS) * 100}%`, height: '100%', background: 'var(--sage)', transition: 'width 1s linear' }} />
+            </div>
+            <p className="f-mono" style={{ fontSize: 12, color: 'var(--ink-faint)', marginTop: 10 }}>
+              Повернення на сторінку SPA через {left} с
+            </p>
+          </div>
+
+          <button className="ls-btn ls-btn-outline" onClick={() => setPage('spa', { replace: true })}>Повернутися зараз</button>
+        </Reveal>
+      </Container>
+    </div>
+  );
+}
+
+const PAGE_IDS = ['home', 'services', 'spa', 'portfolio', 'reviews', 'contacts', 'admin', 'thanks'];
 
 const BASE_PATH = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 
@@ -2202,6 +2262,7 @@ export default function App() {
   const [page, setPageState] = useState(() => (typeof window !== 'undefined' ? pageForPath(window.location.pathname) : 'home'));
   const [data, setData] = useState(DEFAULT_DATA);
   const [ready, setReady] = useState(false);
+  const [thanksInfo, setThanksInfo] = useState(null);   // ← НОВОЕ
 
   const navigate = useCallback((id, opts = {}) => {
     if (!PAGE_IDS.includes(id)) id = 'home';
@@ -2271,10 +2332,11 @@ export default function App() {
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [page]);
 
-  const pages = {
+    const pages = {
     home: <HomePage setPage={navigate} />,
     services: <ServicesPage />,
-    spa: <SpaPage setPage={navigate} />,
+    spa: <SpaPage setPage={navigate} onBooked={(info) => { setThanksInfo(info); navigate('thanks'); }} />,  // ← НОВОЕ
+    thanks: <ThanksPage setPage={navigate} info={thanksInfo} />,                                           // ← НОВОЕ
     portfolio: <PortfolioPage />,
     reviews: <ReviewsPage />,
     contacts: <ContactsPage />,
@@ -2287,7 +2349,7 @@ export default function App() {
 
   return (
     <SiteDataContext.Provider value={{ data, persist, submitPendingReview }}>
-      <div className={`ls-root${page === 'spa' ? ' ls-theme-spa' : ''}`}>
+      <div className={`ls-root${page === 'spa' || page === 'thanks' ? ' ls-theme-spa' : ''}`}>
         <GlobalStyle />
         <Header page={page} setPage={navigate} />
         <div style={{ paddingTop: 'clamp(60px, 8vw, 76px)' }}>
